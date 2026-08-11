@@ -1,54 +1,110 @@
+* INTERPRETE:
 
-- si potrebbe  introdure uno STACK CON ALLOCAZIONE DINAMICA nello
-  heap! Sarebbe adatto anche per la concorrenza: nessun problema per
-  il GC (nello  stack ci sono values o ptr al codice out-of-heap).
-  QuandoSP raggiunge il limite inferiore, si alloca un blocco di 128
-  campi: il bottom_of_stack è l'indirizzo del blocco, i campi si usano
-  al solito dall'alto in basso, quando si tocca il bottom si fa il
-  check ovflow e se c'è un blocco prededente si mette bottom_of_stack
-  uguale a quello. Quindi basta una lista di blocchi non doppia, serve
-  solo il puntatore dal blocco più recente a ritroso fino a quello
-  allocato per primo. Piuttoso laboriosa la modifica del runtime e
-  delle primitive (occorre creare macro o routine per astrarre le
-  operazioni elementari sullo stack: push, pop, access, slide... e
-  modificare tutto il codice affinché le usi, anziché operare
-  direttamente sullo SP. Vanno anche "pubblicate" per chi deve
-  scrivere custom primitives).
+- a volte funziona, altre no: ricercare il bug
+
+* GC:
+
+- controllare che dopo ogni chiamata a caml_alloc (sia nelle
+  stdlib_*.asm che nel codice del compilatore e dell'interprete) non
+  si faccia riferimento a puntatori potenzialmente invalidi (sono
+  tutti quelli che non sono root)
+
+* STACK:
+
+- caml_stack_ensure_capacity deve alzare Stack_overflow se stack
+  insufficiente (ora non fa nulla)
+
+- un accesso allo stack ora si fa così:
+
+  LDA (SP),Y
+  STA lo_dest
+  INY
+  LDA (SP),Y
+  STA hi_dest
+  
+  si può velocizzare di 3 cicli spezzando lo stack in due porzioni di
+  stessa dimensione:
+  
+  LDA (SPl),Y
+  STA lo_dest
+  LDA (SPh),Y
+  STA hi_dest
+  
+  il test di overflow è banale (basta sostituire SP con SPh nel test
+  attuale); gli incrementi dei puntatori restano di pari costo (un
+  doppio incremento di SP diventa un singolo incremento di SPl e
+  SPh). VEDERE QUANTO CONVIENE (direi moltom visto l'utilizzo dello
+  stack).
+
+- si potrebbe introdure uno STACK CON ALLOCAZIONE DINAMICA nello heap!
+  Sarebbe adatto anche per la concorrenza: nessun problema per il GC
+  (nello stack ci sono values o ptr al codice out-of-heap).  QuandoSP
+  raggiunge il limite inferiore, si alloca un blocco di 128 campi: il
+  bottom_of_stack è l'indirizzo del blocco, i campi si usano al solito
+  dall'alto in basso, quando si tocca il bottom si fa il check ovflow
+  e se c'è un blocco prededente si mette bottom_of_stack uguale a
+  quello. Quindi basta una lista di blocchi non doppia, serve solo il
+  puntatore dal blocco più recente a ritroso fino a quello allocato
+  per primo. Piuttoso laboriosa la modifica del runtime e delle
+  primitive (occorre creare macro o routine per astrarre le operazioni
+  elementari sullo stack: push, pop, access, slide... e modificare
+  tutto il codice affinché le usi, anziché operare direttamente sullo
+  SP. Vanno anche "pubblicate" per chi deve scrivere custom
+  primitives).
+  
+* NATIVE CODE:
+  le routine brevi possono essere dichiarate come macro e se ne può fare l'inlining
+  
+* TUTTE LE PRIMITIVE E CODICE DI Stdlib:
+
+- allineare alla 4.14.4
+
+* FLOAT:
 
 - usare il 6° byte dei float per nan e +/-inf
 
-- caml_stack_ensure_capacity deve alzare Stack_overflow se stack
-  insufficiente (ora non fa nulla) 
+- vedere se ci sono nuove primitive da inserire
 
 - tolto il warn su $47 in stdlib_floats.asm ma fare attenzione, lo usa
-  C64_FOUT e altre (quali?) 
+  C64_FOUT e altre (quali?)
+
+* COMPARE:
 
 - stdlib_compare.asm fare
-caml_compare_val_custom_tag
-caml_compare_val_double_array_tag
-caml_compare_val_object_tag
+
+  caml_compare_val_custom_tag
+  caml_compare_val_double_array_tag
+  caml_compare_val_object_tag
+
+* INT32/INT64:
 
 - stdlib_integers.asm fare
-caml_int32_div(value v1, value v2)
-caml_int32_mod(value v1, value v2)
-caml_int32_bswap(value v)
-caml_int32_of_string(value s)
-caml_int64_bits_of_float(value vd)
-caml_int64_div(value v1, value v2)
-caml_int64_mod(value v1, value v2)
-caml_int64_bswap(value v)
-caml_int64_of_int(value v)
-caml_int64_to_int(value v)
-caml_int64_of_float(value v)
-caml_int64_of_int32(value v)
-caml_int64_to_int32(value v)
-caml_int64_of_string(value s)
+
+  caml_int32_div(value v1, value v2)
+  caml_int32_mod(value v1, value v2)
+  caml_int32_bswap(value v)
+  caml_int32_of_string(value s)
+  caml_int64_bits_of_float(value vd)
+  caml_int64_div(value v1, value v2)
+  caml_int64_mod(value v1, value v2)
+  caml_int64_bswap(value v)
+  caml_int64_of_int(value v)
+  caml_int64_to_int(value v)
+  caml_int64_of_float(value v)
+  caml_int64_of_int32(value v)
+  caml_int64_to_int32(value v)
+  caml_int64_of_string(value s)
+
+* DOC:
 
 - nella documentazione scrivere che per indicare a merlin la stdlib da
-usare per completion e typing, nel .merlin va messo
-	STDLIB <breadcaml-lib-path>
-dove <breadcaml-lib-path> è l'output di
-	breadcaml -where
+  usare per completion e typing, nel .merlin va messo
+
+  STDLIB <breadcaml-lib-path>
+
+  dove <breadcaml-lib-path> è l'output di
+
+  bcamlc -where
 
 - in tools c'è uno script per generare i prototipi in C delle funzioni
   utente, documentare

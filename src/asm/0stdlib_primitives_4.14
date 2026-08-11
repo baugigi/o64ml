@@ -24,7 +24,6 @@ caml_atan_float
 caml_atanh_float
 caml_ba_blit
 caml_ba_change_layout
-caml_backtrace_status
 caml_ba_create
 caml_ba_dim
 caml_ba_dim_1
@@ -51,6 +50,7 @@ caml_ba_uint8_get64
 caml_ba_uint8_set16
 caml_ba_uint8_set32
 caml_ba_uint8_set64
+caml_backtrace_status
 caml_blit_bytes
 caml_blit_string
 caml_bswap16
@@ -104,8 +104,8 @@ caml_ephe_unset_data
 caml_ephe_unset_key
 caml_eq_float
 caml_equal
-caml_erfc_float
 caml_erf_float
+caml_erfc_float
 caml_eventlog_pause
 caml_eventlog_resume
 caml_exp2_float
@@ -116,15 +116,15 @@ caml_fill_string
 caml_final_register
 caml_final_register_called_without_value
 caml_final_release
+caml_float_compare
+caml_float_of_int
+caml_float_of_string
 caml_floatarray_blit
 caml_floatarray_create
 caml_floatarray_get
 caml_floatarray_set
 caml_floatarray_unsafe_get
 caml_floatarray_unsafe_set
-caml_float_compare
-caml_float_of_int
-caml_float_of_string
 caml_floor_float
 caml_fma_float
 caml_fmod_float
@@ -376,8 +376,8 @@ caml_sys_get_argv
 caml_sys_get_config
 caml_sys_getcwd
 caml_sys_getenv
-caml_sys_isatty
 caml_sys_is_directory
+caml_sys_isatty
 caml_sys_mkdir
 caml_sys_modify_argv
 caml_sys_open

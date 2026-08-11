@@ -1,16 +1,15 @@
-(* ----------------------------------------------------------------------
+(* ——————————————————————————————————————————————————————————————————————
    Progetto BreadCaml / The BreadCaml Project
    Copyright (C) 21-Apr-2026 Piero Furiesi
-
+   
    Questo  programma  è software  libero;  può  essere ridistribuito  e/o
-   modificato nei termini della GNU General Public License (GPL) versione
-   2; si veda il file LICENZA-it nella cartella radice del progetto.
-
+   modificato nei termini della licenza GNU GPL ver. 2,  come specificato
+   nel file LICENZA-it nella cartella principale del progetto.
+   
    This program is  free software; you can redistribute  it and/or modify
-   it under the terms of the  GNU General Public License (GPL) version 2,
-   as specified in the LICENSE-en file in the project root folder.
-   ---------------------------------------------------------------------- *)
-
+   it under the terms of the GNU  General Public License (GPL) ver. 2, as
+   specified in the LICENSE-en file in the project root folder.
+   —————————————————————————————————————————————————————————————————————— *)
 (* SYNOPSIS:
    command [-o outfile] [OPTIONS] [OCAMLC_OPTIONS] FILE... [-- [ACME_OPTIONS]]
    command -c [OCAMLC_OPTIONS] FILE...
@@ -192,70 +191,44 @@ let check_args () =
       "Error: %s\nTry ‘%s -help’ or ‘man %s’ for more info.\n%!" err me me;
     exit 1
 
-let return_parse_result () =
-  (* Check arguments *)
-  check_args ();    
-  (* Get the rightmost filename specified (the 1st in list) *)
-  let last_file =
-    (* !input_files passed check_args(), so List.hd cannot fail *)
-    Filename.remove_extension (List.hd !input_files) in
-  (* Reverse lists to match the left-to-right order of cmdline args *)
-  ocamlc_opts := List.rev !ocamlc_opts;
-  input_files := List.rev !input_files;
-  (* Set dbfile according to -db/-o opts, or default value *)
-  let dbfile = match !db_arg, !o_arg with
-    | "", "" -> last_file ^ ".db"
-    | "", oa -> (Filename.remove_extension oa) ^ ".db"
-    | _ , _  -> !db_arg in
-  (* File lists for Export.export and ocamlc *)
-  let externs, ocamlc_files =
-    List.partition
-      (fun f -> Filename.check_suffix f ".asm")
-      !input_files in
-  (* Define the command line for ocamlc *)
-  let ocamlc_cmdline =
-    "CAMLLIB=" ^ Filename.quote Config.libdir
-    ^+ Filename.quote Config.ocamlc
-    ^+ "-custom"
-    ^+ (if !verbose then "-verbose" else "")
-    ^+ (if !compile_only then "-c" else "")
-    ^+ "-ppx"
-    ^+ Filename.quote (Config.bindir ^ "/bcamlppx" ^+ dbfile)
-    ^+ String.concat " "
-         (!ocamlc_opts @ List.map Filename.quote ocamlc_files) in
-  (* Return the parsing result *)
-  if !compile_only then
-    (* Parsing result when -c present *)
-    Compileonly
-      { ocamlc_cmdline;
-        verbose = !verbose }
-  else
-    (* Set prgfile according to -o opt, or default value *)
-    let prgfile =
-      if !o_arg = "" then last_file ^ ".prg" else !o_arg in
-    (* Define the command line for acme *)
-    let acme_cmdline =
-      Filename.quote Config.acme
-      ^+ (if !showmem then "-Dcaml_SHOWMEM=1" else "")
-      ^+ (if !verbose then "-v9" else "")
-      ^+ String.concat " " !acme_opts in
-    (* Parsing result when -c not present *)
-    Fullprocess 
-      { ocamlc_cmdline;
-        acme_cmdline;
-        prgfile;
-        top_of_mem  = !mem_arg;
-        stack_pages = !stack_arg;
-        externs;
-        verbose = !verbose }
-
 (* Main *)
 let parse () =
-  (* Process command line *)
   let specs () = dyn_add_ocamlc_opts 1 speclist in
   Arg.parse (Arg.align (specs ())) anon_fun usage;
-  (* Give way to "show only" options *)
   match !show_opt with
   | Some info -> Show info
-  | None -> return_parse_result ()
+  | None ->
+     check_args ();    
+     let last_file =
+       Filename.remove_extension (List.hd !input_files (* cannot fail *) ) in
+     ocamlc_opts := List.rev !ocamlc_opts;
+     input_files := List.rev !input_files;
+     let dbfile = match !db_arg, !o_arg with
+       | "", "" -> last_file ^ ".db"
+       | "", o_arg -> (Filename.remove_extension o_arg) ^ ".db"
+       | _ , _  -> !db_arg in
+     let externs, ocamlc_files =
+       List.partition (fun f -> Filename.check_suffix f ".asm") !input_files in
+     let ocamlc_cmdline =
+       "CAMLLIB=" ^ Filename.quote Config.libdir
+       ^+ Filename.quote Config.ocamlc
+       ^+ "-custom"
+       ^+ (if !verbose then "-verbose" else "")
+       ^+ (if !compile_only then "-c" else "")
+       ^+ "-ppx"
+       ^+ Filename.quote (Config.bindir ^ "/bcamlppx" ^+ dbfile)
+       ^+ String.concat " "
+            (!ocamlc_opts @ List.map Filename.quote ocamlc_files) in
+     if !compile_only then Compileonly { ocamlc_cmdline; verbose = !verbose }
+     else
+       let prgfile = if !o_arg = "" then last_file ^ ".prg" else !o_arg in
+       let acme_cmdline =
+         Filename.quote Config.acme
+         ^+ (if !showmem then "-Dcaml_SHOWMEM=1" else "")
+         ^+ (if !verbose then "-v9" else "")
+         ^+ String.concat " " !acme_opts in
+       Fullprocess { ocamlc_cmdline; acme_cmdline; prgfile; externs;
+                     top_of_mem  = !mem_arg; stack_pages = !stack_arg;
+                     verbose = !verbose }
+
 

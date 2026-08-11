@@ -1,23 +1,20 @@
-(* ----------------------------------------------------------------------
+(* ——————————————————————————————————————————————————————————————————————
    Progetto BreadCaml / The BreadCaml Project
+   Copyright (C) 21-Apr-2026 Piero Furiesi
+
                                      SOFTWARE DI TERZI/3RD PARTY SOFTWARE
-   OCamlclean
-     Origine/Source: https://github.com/bvaugon/ocamlclean
-     Copyright (C) 2015 Benoît Vaugon
-     Integrazione in BreadCaml/Integration into BreadCaml:
-     21-Apr-2026 Piero Furiesi
+   OCamlclean       Benoît Vaugon - https://github.com/bvaugon/ocamlclean
 
-   Questo file  è distribuito nei  termini della licenza CeCILL  (si veda
-   CeCILL-LICENSE-fr, in francese, oppure CeCILL-LICENSE-en, in inglese),
-   il cui art. 5.3.4 ne  consente l'integrazione nel Progetto BreadCaml e
-   la sua ridistribuzione sotto licenza GNU GPL.
+   Questo file, originariamente distribuito con licenza CeCILL, è incluso
+   nel Progetto Breadbin e, in accordo  con l'Art. 5.3.4 di detta licenza
+   (vedere LICENSE-en, in  inglese, o LICENSE-fr, in  francese, in questa
+   cartella), è ridistribuito con licenza GNU GPL versione 2.
 
-   This file  is distributed under the  terms of the CeCILL  License (see
-   CeCILL-LICENSE-fr,  in  French  language,  and  CeCILL-LICENSE-en,  in
-   English). Article  5.3.4 of that  license allows its  integration into
-   The BreadCaml Project and its redistribution under the GNU GPL.
-   ---------------------------------------------------------------------- *)
-
+   This  file,  originally  distributed  under  the  CeCILL  license,  is
+   included in the Breadbin Project and, in accordance with Article 5.3.4
+   of that license (see LICENSE-en, in English, or LICENSE-fr, in French,
+   in this directory), is redistributed under the GNU GPL version 2.
+   —————————————————————————————————————————————————————————————————————— *)
 (*************************************************************************)
 (*                                                                       *)
 (*                              OCamlClean                               *)
@@ -25,7 +22,7 @@
 (*                             Benoit Vaugon                             *)
 (*                                                                       *)
 (*    This file is distributed under the terms of the CeCILL license.    *)
-(*    See file CeCILL-LICENSE-en.                                        *)
+(*    See file LICENSE-en.                                               *)
 (*                                                                       *)
 (*************************************************************************)
 

@@ -1,58 +1,28 @@
 #!/bin/bash
+#  ——————————————————————————————————————————————————————————————————————
+#  Progetto BreadCaml / The BreadCaml Project
+#  Copyright (C) 21-Apr-2026 Piero Furiesi
+#  
+#  Questo  programma  è software  libero;  può  essere ridistribuito  e/o
+#  modificato nei termini della licenza GNU GPL ver. 2,  come specificato
+#  nel file LICENZA-it nella cartella principale del progetto.
+#  
+#  This program is  free software; you can redistribute  it and/or modify
+#  it under the terms of the GNU  General Public License (GPL) ver. 2, as
+#  specified in the LICENSE-en file in the project root folder.
+#  ——————————————————————————————————————————————————————————————————————
 
-# depends.asm generator for src/asm/stdlib_*.asm routines
+# depends.asm generator for stdlib_*.asm routines.
+# See <project_root>/src/asm/CODING_RULES
 
 # Input and output files
 OUTFILE="$1"
 shift
 INFILE="$@"
 
-# CODING RULES for stdlib_*.asm files to let this script work:
-#
-# 1) Each routine MUST have this structure:
-#
-#       !ifdef caml_PRIM__<ROUTINE_LABEL(i)> '{'
-#       <ROUTINE_LABEL(i)>
-#           acme_code
-#       [<GLOBAL_LABEL(i,1)> ['=' acme_expr]]
-#           acme_code
-#           ...
-#       [<GLOBAL_LABEL(i,n)> ['=' acme_expr]]
-#           acme_code
-#           [; fallthrough <ROUTINE_LABEL(i+1)>]
-#       '}'
-#
-#  · <ROUTINE_LABEL(x)> is the string "caml_", followed by a sequence of
-#    alphanumeric strings, separated by "_"; the first string of the sequence
-#    must start with a letter.
-#
-#  · <GLOBAL_LABEL(i,x)> is the <ROUTINE_LABEL(i)>, followed by "__" and a
-#    sequence of alphanumeric strings, separated by "_"; the first string of
-#    the sequence must start with a letter.
-#
-#  · Both acme_code and acme_expr may obviously contain references to other
-#    <ROUTINE_LABEL(j)> and/or <GLOBAL_LABEL(j)>s, which will be treated
-#    as dependencies of <ROUTINE_LABEL(i)> on <ROUTINE_LABEL(j)>.
-#
-#  · A fallthrough point MUST be commented by one or more ';', followed by
-#    optional spaces/tabs, the case-insensitive string "fallthrough", one or
-#    more spaces/tabs, and finally the <ROUTINE_LABEL(i+1)>; the comment will
-#    be treated as a dependency of <ROUTINE_LABEL(i)> on <ROUTINE_LABEL(i+1)>;
-#    the comment MUST precede the final closing brace '}'.
-#
-#  · The final closing brace '}' MUST be in the FIRST column; no other '}' in
-#    acme_code may appear in the first column.
-#
-# 2) All charachters from the LEFTMOST ';' to the end of line will be treated
-#    as comments and DISCARDED by this script (except "; fallthrough..."),
-#    even if the semicolon is enclosed in single- or double-quote characters:
-#    .BAD:  LDA #';':JSR caml_my_routine   ;this dep will be discarded
-#    .GOOD: LDA #';'
-#           JSR caml_my_routine            ;this dep will be caught
-
 # sed program to extract deps
-SEQ='[a-zA-Z](_?[a-zA-Z0-9])*'
-ROUT="caml_$SEQ"
+NAME='[a-zA-Z](_?[a-zA-Z0-9])*'
+ROUT="caml_$NAME"
 IFDEF='^[ \t]*!ifdef[ \t]+caml_PRIM__'
 FALLTH='^[^;]*;+[ \t]*fallthrough[ \t]+'
 SEDPROGRAM="
@@ -71,7 +41,7 @@ SEDPROGRAM="
                                # Lines in between:
   s/$FALLTH($ROUT).*$/ \1/i    #  extract dep from fallthrough comment
   s/;.*$//g                    #  remove other ACME comments
-  s/.*($ROUT)(__$SEQ)?/§\1/g   #  prepend § to each dep
+  s/.*($ROUT)(__$NAME)?/§\1/g  #  prepend § to each dep
   /§/! d                       #  if no deps, delete and start next cycle
   s/[^§]*§($ROUT)[^§]*/\1 /g   #  remove § and text between deps
   H                            #  append deps to the hold space

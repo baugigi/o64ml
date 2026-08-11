@@ -1,0 +1,69 @@
+------------------------------------------------------------------------------
+                      CODING RULES FOR stdlib_*.asm FILES
+                for automatic generation of the '.depends' file
+------------------------------------------------------------------------------
+
+1) CODE STRUCTURE FOR A GENERIC Routine(i):
+
+      !ifdef caml_PRIM__<ROUTINE_LABEL(i)> '{'
+      <ROUTINE_LABEL(i)>
+          <acme_code>
+      [<GLOBAL_LABEL(i,1)> ['=' <acme_expr>]]
+          <acme_code>
+          ...
+      [<GLOBAL_LABEL(i,n)> ['=' <acme_expr>]]
+          <acme_code>
+          [<FALLTHROUGH_COMMENT> <ROUTINE_LABEL(i+1)>]
+      '}'
+
+ · <ROUTINE_LABEL(i)>    ::= /caml_<NAME>/
+   The label for the main entry point of Routine(i).
+
+ · <GLOBAL_LABEL(i,x)>   ::= /<ROUTINE_LABEL(i)>__<NAME>/
+   The x-th global label defined in Routine(i); note the TWO underscores.
+
+ · <NAME>                ::= /[a-zA-Z](_?[a-zA-Z0-9])*/
+   One or more alphanumeric strings, separated by a SINGLE underscore; the
+   first string must begin with a letter.
+
+ · <FALLTHROUGH_COMMENT> ::= /;+<SPC>*<FT_TXT><SPC>+<ROUTINE_LABEL(i+1)>/
+   The comment regarding the fallthrough point to Routine(i+1).
+
+ · <FT_TEXT>             ::= /fallthrough/ (case insensitive)
+ · <SPC>                 ::= /[ \t]/       (space or tab)
+
+ · The final  closing curly brace  must be in the  FIRST COLUMN; no  other '}'
+   within <acme_code> may be in the first column.
+
+ · If  a  fallthrough point  is  present,  it MUST  be  commented  out with  a
+   <FALLTHROUGH_COMMENT>; the comment must PRECEDE the final closing '}'.
+
+ · DO  NOT  refer,  within  <acme_code>  or  <acme_expr>  of  Routine(i)>,  to
+   zone-local  symbols   (labels  beginning  with  '.')   defined  in  another
+   Routine(j), or to  global symbols that do not conform  to the definition of
+   <GLOBAL_LABEL(j,_)>. Better yet, avoid using them altogether.
+
+ · All characters from the leftmost ';' to the end of the line will be treated
+   as comments and  ignored, even if the  ';' is enclosed in  single or double
+   quotes:
+
+   .BAD:  LDA #';':JSR caml_my_routine  ;this dependency WILL NOT BE DETECTED!
+   .GOOD: LDA #';'
+          JSR caml_my_routine           ;this dependency will be detected.
+
+------------------------------------------------------------------------------
+
+2) HOW DEPENDENCIES ARE DETECTED BY mkdepends:
+
+ · Any occurrence of <ROUTINE_LABEL(j)>  or <GLOBAL_LABEL(j,_)> in <acme_code>
+   or <acme_expr> will be treated as a dependency of Routine(i) on Routine(j),
+   where j <> i.
+
+ · A <FALLTHROUGH_COMMENT>  will be treated  as a dependency of  Routine(i) on
+   Routine(i+1).
+
+ · After identifying  the set of  all dependencies, the script  calculates its
+   transitive  closure   and  generates  the  complete   list  of  conditional
+   assignments required for the correct assembly of each routine.
+
+------------------------------------------------------------------------------

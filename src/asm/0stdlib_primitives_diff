@@ -1,0 +1,150 @@
+========================================:=====================================
+0stdlib_primitives_4.14			:	0stdlib_primitives_implemented
+========================================:=====================================
+caml_alloc_dummy_infix			<
+----------------------------------------:-------------------------------------
+caml_obj_make_forward			<
+					>	caml_obj_is_block
+caml_obj_raw_field			<
+caml_obj_set_raw_field			<
+caml_obj_with_tag			<
+----------------------------------------:-------------------------------------
+caml_acosh_float			<
+caml_asinh_float			<
+caml_atanh_float			<
+caml_cbrt_float				<
+caml_erf_float				<
+caml_erfc_float				<
+caml_exp2_float				<
+caml_fma_float				<
+caml_log2_float				<
+					>	caml_neg_float
+caml_nextafter_float			<
+caml_round_float			<
+caml_signbit				<
+caml_signbit_float			<
+caml_trunc_float			<
+----------------------------------------:-------------------------------------
+caml_array_fill				<
+					>	caml_array_get_float
+					>	caml_array_set_float
+					>	caml_array_unsafe_get_float
+					>	caml_array_unsafe_set_addr
+					>	caml_array_unsafe_set_float
+caml_floatarray_blit			<
+caml_floatarray_create			<
+caml_floatarray_get			<
+caml_floatarray_set			<
+caml_floatarray_unsafe_get		<
+caml_floatarray_unsafe_set		<
+					>	caml_bitvect_test
+----------------------------------------:-------------------------------------
+caml_bytes_get16			|	caml_string_set16
+caml_bytes_get32			|	caml_string_set32
+caml_bytes_get64			|	caml_string_set64
+caml_bytes_of_string			<
+caml_bytes_set16			<
+caml_bytes_set32			<
+caml_bytes_set64			<
+caml_string_of_bytes			<
+----------------------------------------:-------------------------------------
+caml_int32_bswap			<
+caml_int32_div				<
+caml_int32_format			<
+caml_int32_mod				<
+caml_int32_of_string			<
+caml_int64_add_native			<
+caml_int64_and_native			<
+caml_int64_bswap			<
+caml_int64_div				<
+caml_int64_div_native			<
+caml_int64_format			<
+caml_int64_mod				<
+caml_int64_mod_native			<
+caml_int64_mul_native			<
+caml_int64_neg_native			<
+caml_int64_of_float			<
+caml_int64_of_int			<
+caml_int64_of_int32			<
+caml_int64_of_string			<
+caml_int64_or_native			<
+caml_int64_sub_native			<
+caml_int64_to_int			<
+caml_int64_to_int32			<
+caml_int64_xor_native			<
+----------------------------------------:-------------------------------------
+					>	caml_lazy_follow_forward
+########################################:#####################################
+caml_ba_blit				<
+caml_ba_change_layout			<
+caml_ba_create				<
+caml_ba_dim				<
+caml_ba_dim_1				<
+caml_ba_dim_2				<
+caml_ba_dim_3				<
+caml_ba_fill				<
+caml_ba_get_1				<
+caml_ba_get_2				<
+caml_ba_get_3				<
+caml_ba_get_generic			<
+caml_ba_kind				<
+caml_ba_layout				<
+caml_ba_num_dims			<
+caml_ba_reshape				<
+caml_ba_set_1				<
+caml_ba_set_2				<
+caml_ba_set_3				<
+caml_ba_set_generic			<
+caml_ba_slice				<
+caml_ba_sub				<
+caml_ba_uint8_get16			<
+caml_ba_uint8_get32			<
+caml_ba_uint8_get64			<
+caml_ba_uint8_set16			<
+caml_ba_uint8_set32			<
+caml_ba_uint8_set64			<
+----------------------------------------:-------------------------------------
+caml_eventlog_pause			<
+caml_eventlog_resume			<
+----------------------------------------:-------------------------------------
+caml_input_value_from_bytes		|	caml_input_value_from_string
+					>	caml_input_value_to_outside_heap
+caml_output_value_to_bytes		<
+----------------------------------------:-------------------------------------
+caml_memprof_start			<
+caml_memprof_stop			<
+----------------------------------------:-------------------------------------
+caml_ml_debug_info_status		<
+					>	caml_ml_flush_partial
+caml_ml_is_buffered			<
+					>	caml_ml_output_partial
+caml_ml_set_buffered			<
+caml_reset_afl_instrumentation		<
+caml_restore_raw_backtrace		<
+----------------------------------------:-------------------------------------
+caml_sys_argv				<
+caml_sys_const_naked_pointers_checked	<
+caml_sys_executable_name		<
+caml_sys_mkdir				<
+caml_sys_modify_argv			<
+caml_sys_rmdir				<
+caml_sys_time_include_children		<
+caml_sys_unsafe_getenv			<
+----------------------------------------:-------------------------------------
+					>	caml_terminfo_backup
+					>	caml_terminfo_resume
+caml_terminfo_rows			<
+					>	caml_terminfo_setup
+					>	caml_terminfo_standout
+----------------------------------------:-------------------------------------
+					>	caml_add_debug_info
+					>	caml_remove_debug_info
+					>	caml_hash_univ_param
+					>	caml_register_code_fragment
+					>	caml_register_channel_for_spacetime
+					>	caml_spacetime_enabled
+					>	caml_spacetime_only_works_for_native_code
+					>	caml_static_alloc
+					>	caml_static_free
+					>	caml_static_resize
+----------------------------------------:-------------------------------------

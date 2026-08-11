@@ -1,23 +1,20 @@
-(* ----------------------------------------------------------------------
+(* ——————————————————————————————————————————————————————————————————————
    Progetto BreadCaml / The BreadCaml Project
+   Copyright (C) 21-Apr-2026 Piero Furiesi
+
                                      SOFTWARE DI TERZI/3RD PARTY SOFTWARE
-   OCaml Standard Library
-     Origine/Source: https://ocaml.org
-     Copyright (C) 1996 Institut National de Recherche en Informatique et
-     en Automatique
-     Modifiche/Modifications: 21-Apr-2026 Piero Furiesi
+   OCaml Core System - Stdlib          (C) 1996 INRIA - https://ocaml.org
 
-   Questo file è distribuito nei termini  della licenza LGPL ver. 2.1 con
-   le eccezioni riportate nel file LICENSE (in inglese).
-   Il codice originale rimosso o sostituito è incluso tra (*-- e --*); le
-   aggiunte sono  identificate da  (*++ e ++*)  oppure, nei  commenti per
-   OCamldoc, da {i {b BreadCaml Note} ... }.
+   Modifiche/Modifications: 21-Apr-2026 Piero Furiesi
 
-   This file is distributed under the terms of the LGPL License ver.  2.1
-   with the exceptions stated in file LICENSE.
-   Original code  removed or replaced  is enclosed between (*--  and --*)
-   markers;  new code  is  identified by  (*++ and  ++*)  markers, or  by
-   {i {b BreadCaml Note} ... } in OCamldoc comments.
-   ---------------------------------------------------------------------- *)
+   Questo file  è distribuito con  licenza GNU LGPL 2.1,  con l’eccezione
+   riportata nel file LICENSE (in  inglese).  Il codice originale rimosso
+   o sostituito  è incluso tra (*--  e --*); (*++ e  ++*) identificano le
+   aggiunte, {i {b BreadCaml Note} testo… } i nuovi commenti di OCamldoc.
 
+   This file  is distributed  under the  GNU LGPL  2.1 license,  with the
+   exception stated in the LICENSE  file. (*-- and --*) indicate original
+   code that has been removed/replaced; (*++ and ++*) indicate additions;
+   {i {b BreadCaml Note} text…  } indicates new OCamldoc comments.
+   —————————————————————————————————————————————————————————————————————— *)
 include Array

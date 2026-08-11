@@ -1,3 +1,15 @@
+#  ——————————————————————————————————————————————————————————————————————
+#  Progetto BreadCaml / The BreadCaml Project
+#  Copyright (C) 21-Apr-2026 Piero Furiesi
+#  
+#  Questo  programma  è software  libero;  può  essere ridistribuito  e/o
+#  modificato nei termini della licenza GNU GPL ver. 2,  come specificato
+#  nel file LICENZA-it nella cartella principale del progetto.
+#  
+#  This program is  free software; you can redistribute  it and/or modify
+#  it under the terms of the GNU  General Public License (GPL) ver. 2, as
+#  specified in the LICENSE-en file in the project root folder.
+#  ——————————————————————————————————————————————————————————————————————
 SHELL = /bin/bash
 CONF = ../../etc/Makefile.conf
 include $(if $(wildcard $(CONF)),$(CONF),$(error \
@@ -8,22 +20,22 @@ ucase = $(shell echo $(1)|sed -Ee "s/([a-z])(.*)/\u\1\2/")
 
 # Original list of module basenames for the OCaml standard library
 # (SORTED BY DEPENDENCIES)
-STDLIB_MODULE_BASENAMES = \
-  camlinternalFormatBasics camlinternalAtomic stdlib pervasives either \
-  sys obj camlinternalLazy lazy seq option result bool char uchar list \
-  int bytes string unit marshal array float int32 int64 nativeint lexing \
-  parsing set map stack queue stream buffer camlinternalFormat printf \
-  arg atomic printexc fun gc digest random hashtbl weak format scanf \
-  callback camlinternalOO oo camlinternalMod genlex ephemeron filename \
-  complex arrayLabels listLabels bytesLabels stringLabels moreLabels \
-  stdLabels bigarray in_channel out_channel std_exit
+STDLIB_MODULE_BASENAMES = camlinternalFormatBasics camlinternalAtomic	\
+  stdlib pervasives either sys obj camlinternalLazy lazy seq option	\
+  result bool char uchar list int bytes string unit marshal array	\
+  float int32 int64 nativeint lexing parsing set map stack queue	\
+  stream buffer camlinternalFormat printf arg atomic printexc fun gc	\
+  digest random hashtbl weak format scanf callback camlinternalOO oo	\
+  camlinternalMod genlex ephemeron filename complex arrayLabels		\
+  listLabels bytesLabels stringLabels moreLabels stdLabels bigarray	\
+  in_channel out_channel std_exit
 
 # Modules removed in BreadCaml
-REMOVED = \
-  camlinternalFormatBasics camlinternalAtomic pervasives uchar marshal \
-  nativeint lexing parsing stream camlinternalFormat printf arg atomic \
-  printexc fun gc digest weak format scanf callback camlinternalOO oo \
-  genlex ephemeron filename bigarray in_channel out_channel
+REMOVED = camlinternalFormatBasics camlinternalAtomic pervasives	\
+  uchar marshal nativeint lexing parsing stream camlinternalFormat	\
+  printf arg atomic printexc fun gc digest weak format scanf callback	\
+  camlinternalOO oo genlex ephemeron filename bigarray in_channel	\
+  out_channel
 
 BASENAMES = $(filter-out $(REMOVED),$(STDLIB_MODULE_BASENAMES))
 
@@ -50,7 +62,9 @@ lib: $(CMI) $(CMO) stdlib.cma libcamlrun.a
 man: $(foreach l,$(BASENAMES),$(call ucase,$(l)).$(MAN3EXT)) Stdlib.$(MAN3EXT)
 
 $(CPROTO): ../asm/stdlib_*.asm
-	sed -nE 's/.*[ \t]+caml_PRIM__(caml_nonstd_[a-zA-Z](_?[a-zA-Z0-9])*).*/void \1(){}/p' $^ > $@
+	sed -nE \
+	's/^[^;]*[ \t]+caml_PRIM__(caml_nonstd_[a-zA-Z0-9_]+).*/void \1(){}/p' \
+	$^ > $@
 
 libcamlrun.a: $(CMI) $(CMO) $(LIBRUN) stdlib.cma
 	cp $(OCAMLSTDLIB)/$@ .
@@ -109,9 +123,4 @@ $(PFX)%.cmi: %.mli
 
 .PHONY: clean
 clean:
-	rm -f *.cmi *.cmo *.cma *.o *.$(MAN3EXT) $(CPROTO) libcamlrun.a
-
-.PHONY: gitclean
-gitclean: clean
-	rm -f *~
-
+	rm -f *.{cmi,cmo,cma,o,$(MAN3EXT)} $(CPROTO) libcamlrun.a

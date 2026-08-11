@@ -1,25 +1,27 @@
-#! /bin/bash
-
-# ———————————————————————————————————————————————————————————————————————
-# Progetto BreadCaml / The BreadCaml Project
-# Copyright (C) 2026 Piero Furiesi
-#
-# Questo  programma è  software  libero; è  possibile ridistribuirlo  e/o
-# modificarlo secondo  i termini della  GNU General Public  License (GPL)
-# versione  2,  come  specificato  nel file  LICENZA-it  nella  directory
-# principale del progetto.
-#
-# This program is  free software; you can redistribute  it and/or modify
-# it under the terms of the  GNU General Public License (GPL) version 2,
-# as specified in the LICENSE-en file in the project root.
-# ———————————————————————————————————————————————————————————————————————
+#!/bin/bash
+#  ——————————————————————————————————————————————————————————————————————
+#  Progetto BreadCaml / The BreadCaml Project
+#  Copyright (C) 21-Apr-2026 Piero Furiesi
+#  
+#  Questo  programma  è software  libero;  può  essere ridistribuito  e/o
+#  modificato nei termini della licenza GNU GPL ver. 2,  come specificato
+#  nel file LICENZA-it nella cartella principale del progetto.
+#  
+#  This program is  free software; you can redistribute  it and/or modify
+#  it under the terms of the GNU  General Public License (GPL) ver. 2, as
+#  specified in the LICENSE-en file in the project root folder.
+#  ——————————————————————————————————————————————————————————————————————
 
 [ "$(realpath /proc/$$/exe)" = "$(which bash)" ] || {
-    echo "This script requires the Bash shell." 1>&2; exit 1; }
+    echo "This script requires the Bash shell." 1>&2
+    exit 1
+}
 [ "$(cd -- "$(dirname -- "$0")" &>/dev/null && pwd -P)" = "$(pwd -P)" ] || {
-    echo "Please run this script from its own directory." 1>&2; exit 1; }
+    echo "Please run this script from its own directory." 1>&2
+    exit 1
+}
 
-#####
+##### CONFIG DATA
 
 # Config file
 MAKE_CONF_FILE="etc/Makefile.conf"
@@ -30,7 +32,7 @@ VERSION="$(<VERSION)"
 # Default installation paths
 PREFIX="${OPAM_SWITCH_PREFIX:-~}"
 BINDIR="$PREFIX/bin"
-LIBDIR="$PREFIX/lib/bcamlc"
+LIBDIR="$PREFIX/lib/bcaml"
 MANDIR="$PREFIX/man"
 
 # Section for Breadcaml Stdlib man pages
@@ -41,7 +43,8 @@ ACME_TBZ2=acme-crossass-code-0-r454-trunk.tar.bz2 # source tarball
 ACME_REL="0.97 ("Zem"), 1 May 2026"               # release
 ACME_MIN=20251116                                 # oldest compatible date
 ACME_INSTALL=''                                   # install flag
-#####
+
+##### OUTPUT
 
 # echo command (will be ':' if -s|--silent option is specified)
 ECHO=echo
@@ -62,18 +65,16 @@ unset -v red grn yel bld nrm
     }
 }
 
-#####
+##### FUNCTIONS
 
-# Function: failwith [text]
 # Print a failure message and exit
-failwith() {
+function failwith { # $1: text message
     echo "${bld}${red}Configuration failed:${nrm} $@." 1>&2
     exit 1
 }
 
-# Function: message type [text]
 # Print an execution progress message of given type
-message() {
+function message { # $1: message type; $2: message text
     case "$1" in
         start | end) "$ECHO" "${bld}$2${nrm}"            ;;
         ok)          "$ECHO" "${bld}${grn} ok,${nrm} $2" ;;
@@ -85,11 +86,10 @@ message() {
     esac
 }
 
-# Function: install_acme [rename|retain]
 # Install ACME (and rename/retain the old release) in BINDIR, if ACME_INSTALL
 # is 'y' or 'yes', case-insensitive; if unset/null, read it from stdin.
 # Return COMMAND[acme] properly set.
-install_acme() {
+function install_acme { # $1: [rename|retain] (optional)
     [[ -z $ACME_INSTALL ]] && {
         message cont "This script can install the BreadCaml-compatible release"
 	message cont "$ACME_REL in '$BINDIR'."
@@ -120,21 +120,20 @@ install_acme() {
     COMMANDS[acme]="$BINDIR/acme"
 }
 
-# Function: show help and exit.
-usage() {
+# show help and exit
+function usage {
     cat <<EOF
 Usage: $0 [ OPTIONS... ]
-  -b, --bindir <dir>  Target directory for Breadcaml binaries
-                      (default: $PREFIX/bin)
-  -l, --libdir <dir>  Target directory for the BreadCaml Stdlib files
-                      (default: $PREFIX/lib/bcamlc)
-  -m, --mandir <dir>  Target directory for manual pages
-                      (default: $PREFIX/man)
-  -p, --prefix <dir>  Shortcut for
-                      -b <dir>/bin -l <dir>/lib/bcamlc -m <dir>/man
-  -y, --yes           Automatically accept the ACME installation prompt
-  -s, --silent        Like '-y', also do not display messages (except errors)
-  -h, --help          Show this text.
+ -b, --bindir <dir>  Target directory for Breadcaml binaries
+                     (default: $PREFIX/bin)
+ -l, --libdir <dir>  Target directory for the BreadCaml Stdlib files
+                     (default: $PREFIX/lib/bcaml)
+ -m, --mandir <dir>  Target directory for manual pages
+                     (default: $PREFIX/man)
+ -p, --prefix <dir>  Shortcut for -b <dir>/bin -l <dir>/lib/bcaml -m <dir>/man
+ -y, --yes           Automatically accept the ACME installation prompt
+ -s, --silent        Like -y, also do not display messages (except errors)
+ -h, --help          Show this text.
 EOF
     exit 0
 }
@@ -162,7 +161,7 @@ while (( $# )); do
             shift
             PREFIX="$(realpath -m "${1:-$PREFIX}")"
             BINDIR="$PREFIX/bin"
-            LIBDIR="$PREFIX/lib/bcamlc"
+            LIBDIR="$PREFIX/lib/bcaml"
             MANDIR="$PREFIX/man"
             ;;
         -y | --yes)
@@ -243,18 +242,18 @@ message end "Done."
 SAFE_OPTS="-safe-string -strict-formats -strict-sequence"
 cat > "$MAKE_CONF_FILE" <<EOF
 $(sed -nE '/^# —+$/,/^# —+$/p' "$0")
+ACME = $(printf "%q" "${COMMANDS[acme]}")
 BCAMLC_CONF = $(printf "%q" "$BCAMLC_CONF_FILE")
 BINDIR = $(printf "%q" "$BINDIR")
 LIBDIR = $(printf "%q" "$LIBDIR")
 MAN1DIR = $(printf "%q" "$MANDIR/man1")
 MAN3DIR = $(printf "%q" "$MANDIR/man3")
 MAN3EXT = $(printf "%q" "$MAN3EXT")
-OCAMLC_UNSAFE = $(printf "%q" "${COMMANDS[ocamlc]}")
 OCAMLC = $(printf "%q" "${COMMANDS[ocamlc]}") $SAFE_OPTS
+OCAMLC_UNSAFE = $(printf "%q" "${COMMANDS[ocamlc]}")
 OCAMLSTDLIB = $(printf "%q" "$("${COMMANDS[ocamlc]}" -where)")
 OCAMLDOC = $(printf "%q" "${COMMANDS[ocamldoc]}")
 OCAMLOPT = $(printf "%q" "${COMMANDS[ocamlopt]}") $SAFE_OPTS
-ACME = $(printf "%q" "${COMMANDS[acme]}")
 VERSION = $VERSION
 EOF
 

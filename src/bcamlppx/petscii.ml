@@ -1,16 +1,15 @@
-(* ----------------------------------------------------------------------
+(* ——————————————————————————————————————————————————————————————————————
    Progetto BreadCaml / The BreadCaml Project
    Copyright (C) 21-Apr-2026 Piero Furiesi
-
+   
    Questo  programma  è software  libero;  può  essere ridistribuito  e/o
-   modificato nei termini della GNU General Public License (GPL) versione
-   2; si veda il file LICENZA-it nella cartella radice del progetto.
-
+   modificato nei termini della licenza GNU GPL ver. 2,  come specificato
+   nel file LICENZA-it nella cartella principale del progetto.
+   
    This program is  free software; you can redistribute  it and/or modify
-   it under the terms of the  GNU General Public License (GPL) version 2,
-   as specified in the LICENSE-en file in the project root folder.
-   ---------------------------------------------------------------------- *)
-
+   it under the terms of the GNU  General Public License (GPL) ver. 2, as
+   specified in the LICENSE-en file in the project root folder.
+   —————————————————————————————————————————————————————————————————————— *)
 module CtlChar = struct
   (* cursor movements *)
   let up	= '\145'
@@ -289,18 +288,17 @@ let token_ht =
     ]))
 
 let of_token token =
-  let tkn = String.uppercase_ascii token in
-  try Hashtbl.find token_ht tkn with Not_found ->
-    if String.length tkn = 6 && tkn.[5] = '}' then
-      match String.sub tkn 0 3 with
-      | "{CTL" -> ctl (tkn.[4])
-      | "{CBM" -> cbm (tkn.[4])
+  try Hashtbl.find token_ht token with Not_found ->
+    if String.length token = 6 && token.[5] = '}' then
+      match String.sub token 0 3 with
+      | "{CTL" -> ctl (token.[4])
+      | "{CBM" -> cbm (token.[4])
       | _ -> invalid_arg "petscii_of_token"
     else invalid_arg "petscii_of_token"
 
 let of_string str =
-  let valid_str_regexp = Str.regexp {vld|^\([^{}]*{[^{}]+}\)*[^{}]*$|vld} in
-  let token_regexp = Str.regexp {tkn|{[^{}]+}|tkn} in
+  let valid_str_regexp = Str.regexp {|^\([^{}]*{[^{}]+}\)*[^{}]*$|} in
+  let token_regexp = Str.regexp {|{[^{}]+}|} in
   let str' = String.map of_char str in
   if Str.string_match valid_str_regexp str' 0 then
     Str.global_substitute

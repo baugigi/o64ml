@@ -1,196 +1,240 @@
 #!/bin/bash
+#  ——————————————————————————————————————————————————————————————————————
+#  Progetto BreadCaml / The BreadCaml Project
+#  Copyright (C) 21-Apr-2026 Piero Furiesi
+#  
+#  Questo  programma  è software  libero;  può  essere ridistribuito  e/o
+#  modificato nei termini della licenza GNU GPL ver. 2,  come specificato
+#  nel file LICENZA-it nella cartella principale del progetto.
+#  
+#  This program is  free software; you can redistribute  it and/or modify
+#  it under the terms of the GNU  General Public License (GPL) ver. 2, as
+#  specified in the LICENSE-en file in the project root folder.
+#  ——————————————————————————————————————————————————————————————————————
 
-# -----------------------------------------------------------------------
-# Progetto BreadCaml / The BreadCaml Project
-# Copyright (C) 2026 Piero Furiesi
-#
-# Questo  programma  è  software  libero; può  essere  ridistribuito  e/o
-# modificato nei termini della GNU  General Public License (GPL) versione
-# 2; si veda il file LICENZA-it nella cartella radice del progetto.
-#
-# This program is free software; you can redistribute it and/or modify it
-# under the terms  of the GNU General Public License  (GPL) version 2, as
-# specified in the LICENSE-en file in the project root folder.
-# -----------------------------------------------------------------------
-
-function help {
-    cat <<EOF
-$0 [DIRECTORY]
-Aggiunge gli header appropriati a tutti i file sorgenti OCaml o ACME
-nella DIRECTORY indicata e nelle sue subdirectory.
-Se DIRECTORY non è indicata, stampa i modelli di header disponibili.
-EOF
-}
-
-function print_templates {
-    for I in ${!TITLE[@]}; do
-	echo
-	echo "MODELLO $I) ${TITLE[$I]}"
-	echo "${HEADER[$I]}"
-	echo
-    done | less
-}
-
-function ask_user {
-    echo "Quale header vuoi applicare ai file in '$DIR'?"
-    for I in ${!TITLE[@]}; do
-	echo " $I) ${TITLE[$I]}"
-    done
-    echo "Scegli un'opzione da 1 a ${#TITLE[@]},"
-    read -p "oppure 0 per RIMUOVERE tutti gli header: " CHOICE
-}
-
-function add_header { #FILE #CHOICE
-    # Salta il file se nelle prime tre righe contiene già la firma
-    if grep -q -m 3 "$SIGNATURE" "$1"; then
-        echo "Saltato (header già presente): $1"
-    else
-        TEMP_FILE=$(mktemp)
-        echo "${HEADER[$2]}" > "$TEMP_FILE"
-        echo >> "$TEMP_FILE"
-        cat "$1" >> "$TEMP_FILE"
-        mv "$TEMP_FILE" "$1"
-        echo "Header n° $2 inserito in: $1"
-    fi
-}
+# For each header, you must define the following variables/arrays:
+# - KEY: identification key;
+# - TEST_$KEY: array containing the condition for the ‘find’ command.
+# - HEADER[$KEY]: header text, which must include:
+#   - line 1 containing $LINE;
+#   - line 2 containing $SIGNATURE;
+#   - the last line containing $LINE;
+#   - no other lines containing $LINE.
 
 
-# DATI DESCRITTIVI
+# Data common to all headers
 
 DATE="21-Apr-2026"
 SIGNATURE="Progetto BreadCaml / The BreadCaml Project"
 AUTHOR="Piero Furiesi"
+LINE="$(printf '%.s—' {1..70})"  # 70 '—'s
+
+declare -A HEADER
 
 
-# DEFINIZIONE DEGLI HEADER
+# Text common to all headers that refer to GPLv2
 
-TITLE[1]="Sorgenti OCaml - no terze parti (GPL v2)"
-FIND[1]='-name "*.ml" -o -name "*.mli" -o -name "*.ml.tpl"'
-HEADER[1]=$(cat <<EOF
-(* ----------------------------------------------------------------------
+function print_GPLv2 {  # $1: prefisso per ciascuna riga
+    echo "$GPLv2" | sed -E "s/^(.*)$/$1\1/"
+}
+GPLv2="$(cat <<EOF
+
+Questo  programma  è software  libero;  può  essere ridistribuito  e/o
+modificato nei termini della licenza GNU GPL ver. 2,  come specificato
+nel file LICENZA-it nella cartella principale del progetto.
+
+This program is  free software; you can redistribute  it and/or modify
+it under the terms of the GNU  General Public License (GPL) ver. 2, as
+specified in the LICENSE-en file in the project root folder.
+EOF
+)"
+
+
+# GPLv2 header for OCaml source code - no third parties
+
+KEY='OCAML'
+TEST_OCAML=( ! -path '*/stdlib/*' ! -path '*/ocamlclean/*' -name '*.ml*' )
+HEADER["$KEY"]="$(cat <<EOF
+(* $LINE
+   $SIGNATURE
+   Copyright (C) $DATE $AUTHOR
+$(print_GPLv2 '   ')
+   $LINE *)
+EOF
+)"
+
+
+# GPLv2 header for Assembly source code
+
+KEY='ASSEMBLY'
+TEST_ASSEMBLY=( -name '*.asm' )
+HEADER["$KEY"]="$(cat <<EOF
+;; $LINE
+;; $SIGNATURE
+;; Copyright (C) $DATE $AUTHOR
+$(print_GPLv2 ';; ')
+;; $LINE
+EOF
+)"
+
+
+# GPLv2 header for Makefiles and Bash scripts
+
+KEY='SCRIPT'
+TEST_SCRIPT=( -name Makefile -o -name configure -o
+	      -path '*/tools/*' -exec sed -nE '1{\:^#!/bin/bash:q0};q1' {} ';' )
+HEADER["$KEY"]="$(cat <<EOF
+#  $LINE
+#  $SIGNATURE
+#  Copyright (C) $DATE $AUTHOR
+$(print_GPLv2 '#  ')
+#  $LINE
+EOF
+)"
+
+
+# LGLP Header + OCaml Linking Exception for the Stdlib
+
+KEY='STDLIB'
+TEST_STDLIB=( -path '*/stdlib/*' -name '*.ml*' )
+HEADER["$KEY"]="$(cat <<EOF
+(* $LINE
    $SIGNATURE
    Copyright (C) $DATE $AUTHOR
 
-   Questo  programma  è software  libero;  può  essere ridistribuito  e/o
-   modificato nei termini della GNU General Public License (GPL) versione
-   2; si veda il file LICENZA-it nella cartella radice del progetto.
-
-   This program is  free software; you can redistribute  it and/or modify
-   it under the terms of the  GNU General Public License (GPL) version 2,
-   as specified in the LICENSE-en file in the project root folder.
-   ---------------------------------------------------------------------- *)
-EOF
-)
-
-TITLE[2]="Sorgenti ACME - no terze parti (GPL v2)"
-FIND[2]='-name "*.asm"'
-HEADER[2]=$(cat <<EOF
-;; ----------------------------------------------------------------------
-;; $SIGNATURE
-;; Copyright (C) $DATE $AUTHOR
-;;
-;; Questo  programma  è software  libero;  può  essere ridistribuito  e/o
-;; modificato nei termini della GNU General Public License (GPL) versione
-;; 2; si veda il file LICENZA-it nella cartella radice del progetto.
-;;
-;; This program is  free software; you can redistribute  it and/or modify
-;; it under the terms of the  GNU General Public License (GPL) version 2,
-;; as specified in the LICENSE-en file in the project root folder.
-;; ----------------------------------------------------------------------
-EOF
-)
-
-TITLE[3]="StdLib di OCaml modificata (LGPL v2.1 + Eccezione)"
-FIND[3]='-name "*.ml" -o -name "*.mli"'
-HEADER[3]=$(cat <<EOF
-(* ----------------------------------------------------------------------
-   $SIGNATURE
                                      SOFTWARE DI TERZI/3RD PARTY SOFTWARE
-   OCaml Standard Library
-     Origine/Source: https://ocaml.org
-     Copyright (C) 1996 Institut National de Recherche en Informatique et
-     en Automatique
-     Modifiche/Modifications: $DATE $AUTHOR
+   OCaml Core System - Stdlib          (C) 1996 INRIA - https://ocaml.org
 
-   Questo file è distribuito nei termini  della licenza LGPL ver. 2.1 con
-   le eccezioni riportate nel file LICENSE (in inglese).
-   Il codice originale rimosso o sostituito è incluso tra (*-- e --*); le
-   aggiunte sono  identificate da  (*++ e ++*)  oppure, nei  commenti per
-   OCamldoc, da {i {b BreadCaml Note} ... }.
+   Modifiche/Modifications: $DATE $AUTHOR
 
-   This file is distributed under the terms of the LGPL License ver.  2.1
-   with the exceptions stated in file LICENSE.
-   Original code  removed or replaced  is enclosed between (*--  and --*)
-   markers;  new code  is  identified by  (*++ and  ++*)  markers, or  by
-   {i {b BreadCaml Note} ... } in OCamldoc comments.
-   ---------------------------------------------------------------------- *)
+   Questo file  è distribuito con  licenza GNU LGPL 2.1,  con l’eccezione
+   riportata nel file LICENSE (in  inglese).  Il codice originale rimosso
+   o sostituito  è incluso tra (*--  e --*); (*++ e  ++*) identificano le
+   aggiunte, {i {b BreadCaml Note} testo… } i nuovi commenti di OCamldoc.
+
+   This file  is distributed  under the  GNU LGPL  2.1 license,  with the
+   exception stated in the LICENSE  file. (*-- and --*) indicate original
+   code that has been removed/replaced; (*++ and ++*) indicate additions;
+   {i {b BreadCaml Note} text…  } indicates new OCamldoc comments.
+   $LINE *)
 EOF
-)
+)"
 
-TITLE[4]="OCamlclean (CeCILL -> GPL v2)"
-FIND[4]='-name "*.ml" -o -name "*.mli"'
-HEADER[4]=$(cat <<EOF
-(* ----------------------------------------------------------------------
+
+# CeCILL -> GPLv2 header for OCamlclean
+
+KEY='OCAMLCLEAN'
+TEST_OCAMLCLEAN=( -path '*/ocamlclean/*' -name '*.ml*' )
+HEADER["$KEY"]="$(cat <<EOF
+(* $LINE
    $SIGNATURE
+   Copyright (C) $DATE $AUTHOR
+
                                      SOFTWARE DI TERZI/3RD PARTY SOFTWARE
-   OCamlclean
-     Origine/Source: https://github.com/bvaugon/ocamlclean
-     Copyright (C) 2015 Benoît Vaugon
-     Integrazione in BreadCaml/Integration into BreadCaml:
-     $DATE $AUTHOR
+   OCamlclean       Benoît Vaugon - https://github.com/bvaugon/ocamlclean
 
-   Questo file  è distribuito nei  termini della licenza CeCILL  (si veda
-   CeCILL-LICENSE-fr, in francese, oppure CeCILL-LICENSE-en, in inglese),
-   il cui art. 5.3.4 ne  consente l'integrazione nel Progetto BreadCaml e
-   la sua ridistribuzione sotto licenza GNU GPL.
+   Questo file, originariamente distribuito con licenza CeCILL, è incluso
+   nel Progetto Breadbin e, in accordo  con l′Art. 5.3.4 di detta licenza
+   (vedere LICENSE-en, in  inglese, o LICENSE-fr, in  francese, in questa
+   cartella), è ridistribuito con licenza GNU GPL versione 2.
 
-   This file  is distributed under the  terms of the CeCILL  License (see
-   CeCILL-LICENSE-fr,  in  French  language,  and  CeCILL-LICENSE-en,  in
-   English). Article  5.3.4 of that  license allows its  integration into
-   The BreadCaml Project and its redistribution under the GNU GPL.
-   ---------------------------------------------------------------------- *)
+   This  file,  originally  distributed  under  the  CeCILL  license,  is
+   included in the Breadbin Project and, in accordance with Article 5.3.4
+   of that license (see LICENSE-en, in English, or LICENSE-fr, in French,
+   in this directory), is redistributed under the GNU GPL version 2.
+   $LINE *)
 EOF
-)
+)"
 
-####
 
-if (( $# == 0 )); then
-    # nessun argomento: stampa i modelli disponibili.
-    print_templates
-    exit 0
-elif (( $# > 1 )); then
-    echo "$0: troppi argomenti." 1>&2
-    echo "Usa '$0 --help' per informazioni." 1>&2
-    exit 1
-elif [[ $1 == "-help" || $1 == "--help" ]]; then
-    help
-    exit 0
-elif [[ ! -d $1 ]]; then
-    echo "$0: la cartella '$1' non esiste." 1>&2
-    exit 1
-fi
+#######
 
-DIR="$1"
 
-# Attende dall'utente una scelta valida
-ask_user
-until [[ $CHOICE == 0 || ( $CHOICE =~ ^[0-9]+ && -n ${TITLE[$CHOICE]} ) ]]; do
-    read -p "Scelta non valida, riprova (^C per uscire): " CHOICE 
-done
+function help_message {
+    cat <<EOF
+$0 [ -p | -d | -help | --help ]
 
-if [[ $CHOICE == 0 ]]; then
-    echo "Rimuovo gli header da tutti i file in '$(pwd)' e nelle subdirectory,"
-    read -p "CONFERMI? (s/n) " CONFIRM
-    if [[ $CONFIRM =~ [sS] ]]; then
-	remove_all_headers
+When run without options, it adds headers to all files in the project.
+The -p option displays the text of the available headers.
+The -d option removes all headers from all files in the project.
+It correctly handles files with #! on the first line.
+EOF
+}
+
+function print_headers {
+    for KEY in "${!HEADER[@]}"; do
+	echo "<inizio: $KEY>"
+	echo "${HEADER[$KEY]}"
+	echo "<fine:   $KEY>"
+	echo ""
+    done | less
+}
+
+function add_header { # $1: FILE; $2: KEY
+    # Skip the file if the first 3 lines already contain the signature
+    # (3 to account for a possible #! on the first line)
+    if head -n 3 "$1" | grep -q -F "$SIGNATURE"; then
+        echo -e "[skipped]\t$1"
     else
-	echo "Rimozione annullata".
+        TEMP_FILE="$(mktemp)"
+	LINE1="$(head -n 1 "$1")"
+        if [[ $LINE1 =~ ^#\! ]]; then
+            # If the file starts with #!, insert the header after the 1st line
+	    echo "$LINE1"
+            echo "${HEADER[$2]}"
+            tail -n +2 "$1"
+        else
+            echo "${HEADER[$2]}"
+            cat "$1"
+        fi > "$TEMP_FILE"
+        mv "$TEMP_FILE" "$1"
+        echo -e "[ $2 ]\t$1"
     fi
-else
-    echo "Applicazione di ${TITLE[$CHOICE]}..."
-    # Usa eval per evitare l'espansione di * in FIND.
-    eval "find \"\$DIR\" -type f \( ${FIND[$CHOICE]} \)"|while read -r FILE; do
-	add_header "$FILE" "$CHOICE"
-    done
-    echo "Operazione completata!"
-fi
+}
+
+function delete_header { # $1: FILE
+    if [[ $(grep -c -F "$LINE" "$1") -eq 2 ]]; then
+	sed -iE "/$LINE/,/$LINE/d" "$1"
+	echo -e "[deleted]\t$1"
+    else
+	echo -e "[not present]\t$1"
+    fi
+}
+
+
+#####
+
+
+DIR="$(realpath --relative-to=. "$(dirname "$0")/..")"
+PRUNE=( -path '*/.git' -prune -o )
+
+case "$#:$1" in
+    0:)
+	# Builds the expression for the ‘find’ command in the EXPR array
+	# by concatenating all the TEST_$KEY arrays, each followed by the
+	# -printf action and a final -o operator
+	for KEY in "${!HEADER[@]}"; do
+	    declare -n TEST="TEST_$KEY"
+	    EXPR+=( '(' '(' "${TEST[@]}" ')' -printf "%p $KEY\n" ')' -o )
+	done
+	# Add a trailing -false operator to cope with the last -o
+	find "$DIR" "${PRUNE[@]}" -type f '(' "${EXPR[@]}" -false ')' \
+	    | while read -r FILE KEY; do
+	    add_header "$FILE" "$KEY"
+	done
+	;;
+    1:-d)
+	find "$DIR" "${PRUNE[@]}" -type f -print | while read -r FILE; do
+	    delete_header "$FILE"
+	done
+	;;
+    1:-help|1:--help)
+	help_message
+	;;
+    1:-p)
+	print_headers
+	;;
+    *)
+	echo "$0: syntax error." 1>&2
+	exit 1
+esac

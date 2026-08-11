@@ -1,55 +1,48 @@
-# ——————————————————————————————————————————————————————————————————————
-# Progetto BreadCaml / The BreadCaml Project
-# Copyright (C) 2026 Piero Furiesi
-#
-# Questo  programma è  software  libero; è  possibile ridistribuirlo  e/o
-# modificarlo secondo  i termini della  GNU General Public  License (GPL)
-# versione  2,  come  specificato  nel file  LICENZA-it  nella  directory
-# principale del progetto.
-#
-# This program is  free software; you can redistribute  it and/or modify
-# it under the terms of the  GNU General Public License (GPL) version 2,
-# as specified in the LICENSE-en file in the project root.
-# ——————————————————————————————————————————————————————————————————————
+#  ——————————————————————————————————————————————————————————————————————
+#  Progetto BreadCaml / The BreadCaml Project
+#  Copyright (C) 21-Apr-2026 Piero Furiesi
+#  
+#  Questo  programma  è software  libero;  può  essere ridistribuito  e/o
+#  modificato nei termini della licenza GNU GPL ver. 2,  come specificato
+#  nel file LICENZA-it nella cartella principale del progetto.
+#  
+#  This program is  free software; you can redistribute  it and/or modify
+#  it under the terms of the GNU  General Public License (GPL) ver. 2, as
+#  specified in the LICENSE-en file in the project root folder.
+#  ——————————————————————————————————————————————————————————————————————
 
-PRG = snake
-DEPENDS = iOtools
-EXTERNS = iOtools.asm
-COMP = bcamlc
-SHELL = /bin/bash
-SED_GENC = s/^[ \t]*\(IOtools_[a-zA-Z0-9_]*\)/void \1 () {}/p
+SHELL := /bin/bash
 
-CMO := $(DEPENDS:=.cmo)
-CMI := $(DEPENDS:=.cmi)
-C := $(EXTERNS:.asm=.c)
+TARGET := snake.prg
+SOURCE := iOtools snake
+EXTLIB := iOtools
+COMP = bcamlopt
+FLAGS = -db snake.db
 
-$(PRG).prg: $(CMO) $(EXTERNS) $(C) $(PRG).ml
-	$(COMP) $(OPTIONS) $^ -- -r $(PRG).rep
+$(TARGET): $(EXTLIB:=.asm) $(EXTLIB:=.c) $(SOURCE:=.cmo)
+	$(COMP) $(FLAGS) -o $@ $^ -- -r snake.rep
 
-%.cmo: %.ml %.cmi
-	$(COMP) -c -db $(PRG).db $<
+%.cmo: %.ml $(SOURCE:=.cmi)
+	$(COMP) $(FLAGS) -c $<
 
 %.cmi: %.mli
-	$(COMP) -c -db $(PRG).db $<
+	$(COMP) $(FLAGS) -c $<
 
-%.o: %.c
-	cc -o $@ -c $<
+.INTERMEDIATE: $(SOURCE:=.mli)
+%.mli: %.ml
+	$(COMP) $(FLAGS) -c -i $< > $@
 
+.INTERMEDIATE: $(SOURCE:=.c)
 %.c: %.asm
-	sed -n -e '$(SED_GENC)' $< > $@
+	sed -nE 's/^[ \t]*(IOtools_[a-zA-Z0-9_]*)/void \1 () {}/p' $< > $@
 
 .PHONY: clean
 clean:
-	rm -f *.cm? *.o $(PRG).{prg,db,rep}
+	rm -f *.{cm?,o,prg,db,rep}
 
-.PHONY: merlin
-merlin: $(CMI)
-	@echo -ne "\
-	STDLIB $(shell bcamlc -where)\n\
+.merlin:
+	echo -ne "\
+	STDLIB $$($(COMP) -where)\n\
 	S .\n\
 	B .\n\
-	" > .$@
-
-show:	$(PRG).prg
-	sed -nE "/^........[0-9a-f]/ p" $(PRG).rep | less
-
+	" > $@
