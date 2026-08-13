@@ -109,5 +109,4 @@
 - in tools c'è uno script per generare i prototipi in C delle funzioni
   utente, documentare
 
-- documentare anche i PPX per poly variants (da rivedere) e per i
-  caratteri Petscii
+- documentare il PPX

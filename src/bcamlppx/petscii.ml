@@ -65,7 +65,7 @@ module CtlChar = struct
     (* cbm+key *)
     | '1' -> '\129'
     | '2' .. '8' as ch -> Char.(chr (149 + code ch - code '2'))
-    | bad_ch -> invalid_arg "Petscii.CtlChar.cbm"
+    | bad_ch -> failwith "Petscii.CtlChar.cbm"
 
   let ctl = function
     (* control+key *)
@@ -82,7 +82,7 @@ module CtlChar = struct
        '\028' (* control + British Pound sign *)
     | '^' -> '\030'
     | '\095' -> '\006' (* control + left arrow *)
-    | bad -> invalid_arg ("Petscii.CtlChar.ctl: '" ^ String.make 1 bad ^ "'")
+    | bad -> failwith "Petscii.CtlChar.ctl"
 
 end
 
@@ -293,8 +293,8 @@ let of_token token =
       match String.sub token 0 3 with
       | "{CTL" -> ctl (token.[4])
       | "{CBM" -> cbm (token.[4])
-      | _ -> invalid_arg "petscii_of_token"
-    else invalid_arg "petscii_of_token"
+      | _ -> failwith "Petscii.of_token"
+    else failwith "Petscii.of_token"
 
 let of_string str =
   let valid_str_regexp = Str.regexp {|^\([^{}]*{[^{}]+}\)*[^{}]*$|} in
@@ -305,4 +305,4 @@ let of_string str =
       token_regexp
       (fun _ -> String.make 1 (of_token (Str.matched_string str')))
       str'
-  else invalid_arg "petsciify_string"
+  else failwith "Petscii.of_string"

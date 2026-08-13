@@ -34,7 +34,7 @@ declare -A HEADER
 
 # Text common to all headers that refer to GPLv2
 
-function print_GPLv2 {  # $1: prefisso per ciascuna riga
+function print_GPLv2 {  # $1: line prefix
     echo "$GPLv2" | sed -E "s/^(.*)$/$1\1/"
 }
 GPLv2="$(cat <<EOF
@@ -152,7 +152,7 @@ EOF
 
 function help_message {
     cat <<EOF
-$0 [ -p | -d | -help | --help ]
+$0 [ -p | -d | --help ]
 
 When run without options, it adds headers to all files in the project.
 The -p option displays the text of the available headers.
@@ -210,7 +210,7 @@ PRUNE=( -path '*/.git' -prune -o )
 
 case "$#:$1" in
     0:)
-	# Builds the expression for the ‘find’ command in the EXPR array
+	# Build the expression for the ‘find’ command in the EXPR array
 	# by concatenating all the TEST_$KEY arrays, each followed by the
 	# -printf action and a final -o operator
 	for KEY in "${!HEADER[@]}"; do
@@ -228,7 +228,7 @@ case "$#:$1" in
 	    delete_header "$FILE"
 	done
 	;;
-    1:-help|1:--help)
+    1:--help)
 	help_message
 	;;
     1:-p)

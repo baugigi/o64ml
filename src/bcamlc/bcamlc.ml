@@ -12,9 +12,9 @@
    —————————————————————————————————————————————————————————————————————— *)
 (* Show info *)
 let show = function
-  | Cmdline.Where ->  print_endline Config.libdir; exit 0
-  | Cmdline.Ocamlc -> print_endline Config.ocamlc; exit 0
-  | Cmdline.Acme ->   print_endline Config.acme;   exit 0
+  | Cmdline.Where ->  print_endline Config.libdir
+  | Cmdline.Ocamlc -> print_endline Config.ocamlc
+  | Cmdline.Acme ->   print_endline Config.acme
   | Cmdline.Version ->
      let comp_desc = match Filename.basename Sys.argv.(0) with
        | "bcamlopt" -> "native code"
@@ -22,8 +22,7 @@ let show = function
        | _ -> failwith "unknown compiler!" in
      Printf.printf
        "The OCaml %s compiler for the Commodore C64, version %s\n%!"
-       comp_desc Config.version;
-     exit 0
+       comp_desc Config.version
 
 (* Sys.command wrapper *)
 let sys_command ~verbose ~command =
@@ -74,7 +73,6 @@ let () = match Cmdline.parse () with
         Printf.eprintf "BreadCaml> Sys_error: %s\n%!" err;
         rm [asmfile; bytefile];
         exit 1
-     | _ ->
+     | Exit ->
         rm [asmfile; bytefile];
         exit 1
-

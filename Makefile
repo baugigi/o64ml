@@ -52,6 +52,6 @@ clean:
 fullinstall: install clean
 
 .PHONY: gitclean
-gitclean:
+gitclean: clean
 	find . -type f -name '*~' -delete
 	rm -f etc/Makefile.conf

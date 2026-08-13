@@ -10,11 +10,18 @@
 ;; it under the terms of the GNU  General Public License (GPL) ver. 2, as
 ;; specified in the LICENSE-en file in the project root folder.
 ;; ——————————————————————————————————————————————————————————————————————
-;;; ----------------------------------------------------------------------------
-;;; ARRAYS (ocaml-4.04.1/byterun/array.c)
-;;; ----------------------------------------------------------------------------
+;; ----------------------------------------------------------------------
+;; ARRAYS (ocaml-4.14.4/runtime/array.c)
+;; ----------------------------------------------------------------------
 !zone caml_ARRAYS {
 
+!ifndef caml_arrays_warn {
+caml_arrays_warn
+  !warn "TODO: caml_array_fill"
+  !warn "TODO: caml_floatarray_blit"
+  !warn "TODO: check for GC-invalidated pointers"
+}
+	
 !ifdef caml_PRIM__caml_make_vect {
 caml_make_vect
         ;; allocate and initialize an array
@@ -54,9 +61,9 @@ caml_make_vect
 ;;      SBC # > caml_heap_sz
 ;;      BCS @no_float_array
         ;; allocate float array 
-        JSR caml_make_float_vect
+        JSR caml_floatarray_create
         ;; init floats
-        LDA @NFLO2                      ; see caml_make_float_vect
+        LDA @NFLO2                      ; see caml_floatarray_create
         LSR
         TAX                             ; X = no. of floats
 ;       CLC
@@ -107,10 +114,10 @@ caml_make_vect
 @error  +caml_raise Invalid_argument, "Array.make"
 }
 
-!ifdef caml_PRIM__caml_make_float_vect {
+!ifdef caml_PRIM__caml_floatarray_create {
         ;; allocate an array of floats
         ;; ACCU = length
-caml_make_float_vect
+caml_floatarray_create
 @NFLO2  = TMP                   ; see caml_make_vect
         LDA ACCU + 1
         BNE @error
@@ -139,7 +146,7 @@ caml_make_float_vect
         LDA BLK + 1
         STA ACCU + 1
         RTS
-@error  +caml_raise Invalid_argument, "Array.create_float"
+@error  +caml_raise Invalid_argument, "Float.Array.create"
 }
 
 !ifdef caml_PRIM__caml_make_array {
@@ -237,7 +244,7 @@ caml_array_get
         ;; check if float
         CMP # Double_array_tag
         BNE caml_array_get_addr__loadsize
-        JMP caml_array_get_float__loadsize
+        JMP caml_floatarray_get__loadsize
 }
 
 !ifdef caml_PRIM__caml_array_get_addr {
@@ -274,15 +281,15 @@ caml_array_get_addr__loadsize
 @error  +caml_raise Invalid_argument, "index out of bounds"
 }
 
-!ifdef caml_PRIM__caml_array_get_float {
-        ;; return an array element (float-only version)
+!ifdef caml_PRIM__caml_floatarray_get {
+        ;; return an array element (floatarray version)
         ;; ACCU = array
         ;; SP[0] = index
-caml_array_get_float
+caml_floatarray_get
         ;; load size
         DEY
         DEC ACCU + 1
-caml_array_get_float__loadsize
+caml_floatarray_get__loadsize
 @SZ     = TMP
 @IDX    = TMP + 1
         LDA (ACCU),Y
@@ -342,7 +349,7 @@ caml_array_unsafe_get
         INC ACCU + 1                            ; restore ptr
         LDY # 0
         CMP # Double_array_tag                  ; check if float
-        BEQ caml_array_unsafe_get_float         ; yes: special case
+        BEQ caml_floatarray_unsafe_get         ; yes: special case
         LDA (SP),Y                              ; Val_int(index), lo
         STA TMP
         INY
@@ -361,11 +368,11 @@ caml_array_unsafe_get
         RTS
 }
 
-!ifdef caml_PRIM__caml_array_unsafe_get_float {
-        ;; return an array element (unsafe, float-only version)
+!ifdef caml_PRIM__caml_floatarray_unsafe_get {
+        ;; return an array element (unsafe, floatarray version)
         ;; ACCU = array
         ;; SP[0] = index
-caml_array_unsafe_get_float
+caml_floatarray_unsafe_get
         ;; load index, lo (ignore hi byte)
         LDA (SP),Y                      ; 2*i+1
         ;; calc 3 * i
@@ -412,7 +419,7 @@ caml_array_set
         ;; check if float
         CMP # Double_array_tag
         BNE caml_array_set_addr__loadsize
-        JMP caml_array_set_float__loadsize
+        JMP caml_floatarray_set__loadsize
 }
 
 !ifdef caml_PRIM__caml_array_set_addr {
@@ -469,16 +476,16 @@ caml_array_set_addr__loadsize
 @error  +caml_raise Invalid_argument, "index out of bounds"
 }
 
-!ifdef caml_PRIM__caml_array_set_float {
-        ;; set an array element to given value (float-only version)
+!ifdef caml_PRIM__caml_floatarray_set {
+        ;; set an array element to given value (floatarray version)
         ;; ACCU = array
         ;; SP[0] = index
         ;; SP[1] = newval
-caml_array_set_float
+caml_floatarray_set
         ;; load size
         DEY
         DEC ACCU + 1
-caml_array_set_float__loadsize
+caml_floatarray_set__loadsize
 @SZ     = TMP
 @IDX    = TMP + 1
 @NEW    = TMP + 2
@@ -544,7 +551,7 @@ caml_array_unsafe_set
         LDY # 0
         ;; check if float
         CMP # Double_array_tag
-        BEQ caml_array_unsafe_set_float
+        BEQ caml_floatarray_unsafe_set
         ;; FALLTHROUGH caml_array_unsafe_set_addr
 }
 
@@ -581,12 +588,12 @@ caml_array_unsafe_set_addr
         RTS
 }
 
-!ifdef caml_PRIM__caml_array_unsafe_set_float {
-        ;; set an array element to given value (unsafe, float-only version)
+!ifdef caml_PRIM__caml_floatarray_unsafe_set {
+        ;; set an array element to given value (unsafe, floatarray version)
         ;; ACCU = array
         ;; SP[0] = index
         ;; SP[1] = newval
-caml_array_unsafe_set_float
+caml_floatarray_unsafe_set
         ;; load index, lo (ignore hi byte)
         LDA (SP),Y                      ; 2*i+1
         ;; calc 3 * i

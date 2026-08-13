@@ -4,7 +4,6 @@
 caml_alloc_dummy_infix			<
 ----------------------------------------:-------------------------------------
 caml_obj_make_forward			<
-					>	caml_obj_is_block
 caml_obj_raw_field			<
 caml_obj_set_raw_field			<
 caml_obj_with_tag			<
@@ -26,18 +25,7 @@ caml_signbit_float			<
 caml_trunc_float			<
 ----------------------------------------:-------------------------------------
 caml_array_fill				<
-					>	caml_array_get_float
-					>	caml_array_set_float
-					>	caml_array_unsafe_get_float
-					>	caml_array_unsafe_set_addr
-					>	caml_array_unsafe_set_float
 caml_floatarray_blit			<
-caml_floatarray_create			<
-caml_floatarray_get			<
-caml_floatarray_set			<
-caml_floatarray_unsafe_get		<
-caml_floatarray_unsafe_set		<
-					>	caml_bitvect_test
 ----------------------------------------:-------------------------------------
 caml_bytes_get16			|	caml_string_set16
 caml_bytes_get32			|	caml_string_set32

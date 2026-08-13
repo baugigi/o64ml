@@ -10,27 +10,22 @@
 ;; it under the terms of the GNU  General Public License (GPL) ver. 2, as
 ;; specified in the LICENSE-en file in the project root folder.
 ;; ——————————————————————————————————————————————————————————————————————
-;;; -----------------------------------------------------------
-;;; OBJECTS / INTERNALOO (ocaml-4.04.1/byterun/obj.c)
-;;; -----------------------------------------------------------
+;;; ---------------------------------------------------------------------
+;;; INTERNAL REPRESENTATION OF VALUES (ocaml-4.14.4/runtime/obj.c)
+;;; ---------------------------------------------------------------------
 
-!zone caml_OBJ_OO {
+!zone caml_OBJ {
 
+!ifndef caml_obj_warn {
+  !warn "TODO: caml_obj_warn"
+  !warn "TODO: caml_obj_make_forward"
+  !warn "TODO: caml_obj_raw_field"
+  !warn "TODO: caml_obj_set_raw_field"
+  !warn "TODO: caml_obj_with_tag"
+  !warn "TODO: check for GC-invalidated pointers"
+}
 caml_OOID
         !word Val_zero
-
-!ifdef caml_PRIM__caml_obj_is_block {
-        ;; return true if value is a block
-        ;; ACCU = value
-caml_obj_is_block
-        LDA # Val_true
-        LSR ACCU
-        BCC +
-        LDA # Val_false
-+       STA ACCU
-        STY ACCU + 1
-        RTS
-}
 
 !ifdef caml_PRIM__caml_obj_tag {
         ;; return tag(value)
@@ -360,7 +355,7 @@ caml_lazy_make_forward
         RTS
 }
 
-}      ;; !zone caml_OBJ_OO
+}      ;; !zone caml_OBJ
 
 
         
