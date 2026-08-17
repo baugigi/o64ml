@@ -16,13 +16,14 @@ version 2, the full text of which  is included at the end of this file
   The  following license  terms  apply to  third-party components  and
 libraries:
   
-  1. The file  "acme-crossass-code.tar.bz2" in  the root  directory of
+  1. The  file "acme-crossass-code.tar.bz2"  in the root  directory of
      the BreadCaml Project is a  mere aggregation of a distribution of
      the   ACME   cross-assembler   authored  by   Marco   Baye   (see
      https://sourceforge.net/projects/acme-crossass)  and is  released
-     under the  terms of the GNU  GENERAL PUBLIC LICENSE version  2; a
-     copy of that license is also available  within the aforementioned
-     bzip2-compressed tar archive, in the "docs/COPYING" file.
+     under the terms  of the GNU GENERAL PUBLIC  LICENSE (GPL) version
+     2;  a  copy  of  that   license  is  also  available  within  the
+     aforementioned    bzip2-compressed    tar   archive,    in    the
+     "docs/COPYING" file.
 
   2. All  files in the "src/stdlib"  directory are a modified  work by
      Piero Furiesi of the standard library of the "OCaml Core System",
@@ -33,15 +34,15 @@ libraries:
      Exception", whose text is available  in the "LICENSE" file within
      the aforementioned directory.
    
-  3. All files in the "src/breadcaml/ocamlclean" directory are part of
+  3. All  files in the  "src/bcamlc/ocamlclean" directory are  part of
      the   OCamlclean  project   by   Benoît   Vaugon  (available   at
      https://github.com/bvaugon/ocamlclean),   originally  distributed
      under the "Contrat de licence de logiciel libre CeCILL" / "CeCILL
-     free software license agreement" (see "LICENSE-fr", in French, or
-     "LICENSE-en",  in English,  within the  aforementioned directory)
-     and,  in  accordance with  Section  5.3.4  of that  License,  are
-     incorporated into  the BreadCaml Project and  redistributed under
-     the GNU GPL version 2.
+     free software  license agreement" version 2.0  (see "LICENSE-fr",
+     in French, or "LICENSE-en", in English, within the aforementioned
+     directory);they are incorporated into  the BreadCaml Project and,
+     pursuant to  Section 5.3.4  of that License,  redistributed under
+     the terms of the GNU GENERAL PUBLIC LICENSE (GPL) version 2.
 
 
 
@@ -91,8 +92,8 @@ are expressly excluded from compensation:
   In   the   event   of    statutory   discrepancies,   conflicts   of
 interpretation, or  limitations imposed by local  laws, the provisions
 regarding the disclaimer  of warranty and limitation  of liability set
-forth in  Sections 11 and 12  of the GNU General  Public License (GPL)
-shall strictly prevail and govern.
+forth in  Sections 11 and 12  of the GNU GENERAL  PUBLIC LICENSE (GPL)
+version 2 shall strictly prevail and govern.
 
 
 Have fun with BreadCaml!

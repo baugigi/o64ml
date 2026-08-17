@@ -1,15 +1,3 @@
-(* ——————————————————————————————————————————————————————————————————————
-   Progetto BreadCaml / The BreadCaml Project
-   Copyright (C) 21-Apr-2026 Piero Furiesi
-   
-   Questo  programma  è software  libero;  può  essere ridistribuito  e/o
-   modificato nei termini della licenza GNU GPL ver. 2,  come specificato
-   nel file LICENZA-it nella cartella principale del progetto.
-   
-   This program is  free software; you can redistribute  it and/or modify
-   it under the terms of the GNU  General Public License (GPL) ver. 2, as
-   specified in the LICENSE-en file in the project root folder.
-   —————————————————————————————————————————————————————————————————————— *)
 module CtlChar = struct
   (* cursor movements *)
   let up	= '\145'
@@ -51,39 +39,18 @@ module CtlChar = struct
   let f8	= '\140'
   (* other keys *)
   let stop	= '\003'
-  let run	= '\131'	(* shift+run/stop *)
-  let ret	= '\013'
-  let shret	= '\141'	(* shift+return *)
+  let run	= '\131'	(* shift + run/stop *)
+  let cr	= '\013'
   let home	= '\019'
-  let clr	= '\147'	(* shift+clr/home *)
+  let clr	= '\147'	(* shift + clr/home *)
   let del	= '\020'
-  let inst	= '\148'	(* shift+inst/del *)
-  let shspc	= '\160'	(* shift+space *)
+  let inst	= '\148'	(* shift + inst/del *)
+  let shf_spc	= '\160'	(* shift + space bar *)
+  let shf_ret	= '\141'	(* shift + return *)
+  let ctl_larr	= '\006'	(* control + left arrow *)
+  let ctl_uarr	= '\030'	(* control + up arrow *)
+  let ctl_pound = '\028'	(* control + pound *)
   let nul	= '\000'
-
-  let cbm = function
-    (* cbm+key *)
-    | '1' -> '\129'
-    | '2' .. '8' as ch -> Char.(chr (149 + code ch - code '2'))
-    | bad_ch -> failwith "Petscii.CtlChar.cbm"
-
-  let ctl = function
-    (* control+key *)
-    | 'A' .. 'Z' as ch -> Char.(chr (1 + code ch - code 'A'))
-    | 'a' .. 'z' as ch -> Char.(chr (1 + code ch - code 'a'))
-    | '0' .. '9' as ch ->
-       let i = Char.(code ch - code '0') in
-       [| rvsoff; blk; wht; red; cyn; pur; grn; blu; yel; rvson |].(i)
-    | ':' -> '\027'
-    | ';' -> '\029'
-    | '=' -> '\031'
-    | '@' -> '\000'
-    | '\163' (* ASCII *) | '\156' (* PETSCII *) ->
-       '\028' (* control + British Pound sign *)
-    | '^' -> '\030'
-    | '\095' -> '\006' (* control + left arrow *)
-    | bad -> failwith "Petscii.CtlChar.ctl"
-
 end
 
 module CommonGlyph = struct
@@ -96,8 +63,10 @@ module CommonGlyph = struct
   let thl	= '\183'
   (* 2px-wide lines: (l)eft/(c)enter/(r)ight, (v)ertical *)
   let lvl	= '\165'
+  let lvl_	= '\180' (* same glyph, different code *)
   let cvl	= '\221'
-  let rvl	= '\170'
+  let rvl	= '\167'
+  let rvl_	= '\170' (* same glyph, different code *)
   (* blocks: (b)ottom/(t)op/(l)eft/(r)ight, no. = width in px *)
   let tb1	= upper
   let tb2	= thl
@@ -130,12 +99,12 @@ module CommonGlyph = struct
   let brq	= '\172'
   let tlbrq	= '\191'
   (* shades: full, (b)ottom-half, (l)eft-half *)
-  let sh	= '\166'
-  let bsh	= '\168'
-  let lsh	= '\220'
+  let shd	= '\166'
+  let bshd	= '\168'
+  let lshd	= '\220'
   (* misc *)
-  let pound	= '\156'	(* British Pound sign *)
-  let uarr	= '^'		(* upwards arrow *)
+  let pound	= '\092'	(* British Pound sign *)
+  let uarr	= '\094'	(* upwards arrow *)
   let larr	= '\095'	(* leftwards arrow *)
 end
 
@@ -188,30 +157,74 @@ end
 
 module LcaseGlyph = struct
   include CommonGlyph
-  (* shades: (r)everse, diagonal *)
-  let rsh	= '\255'
-  let tlsh	= '\169'
-  let blsh	= '\223'
+  (* shades: (r)everse, or diagonal: from (t)op/(b)ottom left corner *)
+  let rshd	= '\222'
+  let tlshd	= '\169'
+  let blshd	= '\223'
   (* misc *)
-  let check	= '\250'
+  let check	= '\186'
+end
+
+module UcaseChar = struct
+  include CtlChar
+  include CommonGlyph
+  include UcaseGlyph
+end
+
+module LcaseChar = struct
+  include CtlChar
+  include CommonGlyph
+  include LcaseGlyph
 end
 
 include CtlChar
+include CommonGlyph
 include UcaseGlyph
 include LcaseGlyph
 
-let of_char = function
-  | 'A' .. 'Z' as ch -> Char.(chr (code ch + 0x80))
-  | 'a' .. 'z' as ch -> Char.(chr (code ch - 0x20))
-  | '_' -> under
-  | '|' -> cvl
-  | '\163' -> pound
-  | ch -> ch
+let cbm ch =
+  let shifted = [| tlc; tlbrq; trq; brq; utj; blq; lvl; lvl_; bb4; lb3; lb4;
+                   rb3; rvl; rvl_; bb3; bhl; rtj; dtj; trc; tb1; tb3; tlq; ltj;
+                   brc; thl; blc |] in
+  match ch with
+  (* cbm+key *)
+  | 'A' .. 'Z' -> let idx = Char.(code ch - code 'A') in shifted.(idx)
+  | 'a' .. 'z' -> let idx = Char.(code ch - code 'a') in shifted.(idx)
+  | '1' -> org
+  | '2' .. '8' -> Char.(chr (149 + code ch - code '2'))
+  | '*' -> trt (* = blshd *)
+  | '+' -> shd
+  | '-' -> lshd
+  | '@' -> under
+  | '\163' (* Pound *) -> bshd
+  | _ -> failwith "Petscii.cbm"
+
+let ctl ch = match ch with
+  (* control+key *)
+  | 'A' .. 'Z' -> Char.(chr (1 + code ch - code 'A'))
+  | 'a' .. 'z' -> Char.(chr (1 + code ch - code 'a'))
+  | '0' .. '9' -> let i = Char.(code ch - code '0') in
+                  [|rvsoff; blk; wht; red; cyn; pur; grn; blu; yel; rvson|].(i)
+  | ':' -> '\027'
+  | '\163' (* Pound *) -> red
+  | ';' -> rt
+  | '=' -> blu
+  | '@' -> nul
+  | '^' -> grn		(* ctl + up arrow   = ctl + 6 *)
+  | '_' -> '\006'	(* ctl + left arrow = ctl + F *)
+  | _ -> failwith "Petscii.ctl"
+
+let of_char ch = match ch with
+  | 'A' .. 'Z' -> Char.(chr (code ch + 0x80))	(* 65..90 -> 193..218 *)
+  | 'a' .. 'z' -> Char.(chr (code ch - 0x20))	(* 97..122 -> 65..90 *)
+  | '_' -> under				(* 95 -> 164 *)
+  | '|' -> cvl		  			(* 124 -> 221 *)
+  | '\163' (* Pound *) -> pound  		(* 163 -> 92 *)
+  | _ -> ch
 
 let token_ht =
   Hashtbl.of_seq
     (List.to_seq
-     (List.map (fun (k, v) -> String.map of_char k, v)
        [ (* --- Petscii.CommonGlyph --- *)
          (* 1px-wide lines *)
          ("{UNDER}", under); ("{UPPER}", upper);
@@ -231,9 +244,10 @@ let token_ht =
          ("{TLQ}", tlq); ("{TRQ}", trq); ("{BLQ}", blq); ("{BRQ}", brq);
          ("{TLBRQ}", tlbrq);
          (* shades *)
-         ("{SH}", sh); ("{BSH}", bsh); ("{LSH}", lsh);
+         ("{SHD}", shd); ("{BSHD}", bshd); ("{LSHD}", lshd);
          (* misc *)
          ("{POUND}", pound); ("{UARR}", uarr); ("{LARR}", larr);
+         
          (* --- Petscii.UcaseGlyph --- *)
          (* card suits *)
          ("{SPD}", spd); ("{HEA}", hea); ("{CLB}", clb); ("{DMD}", dmd);
@@ -256,11 +270,13 @@ let token_ht =
          ("{CIRC}", circ); ("{RING}", ring);
          (* misc *)
          ("{PI}", pi);
+         
          (* --- Petscii.LcaseGlyph --- *)
          (* shades *)
-         ("{RSH}", rsh); ("{TLSH}", tlsh); ("{BLSH}", blsh);
+         ("{RSHD}", rshd); ("{TLSHD}", tlshd); ("{BLSHD}", blshd);
          (* misc *)
          ("{CHECK}", check);
+         
          (* --- Petscii.CtlChar --- *)
          (* cursor movements *)
          ("{UP}", up); ("{DN}", dn); ("{LF}", lf); ("{RT}", rt);
@@ -268,7 +284,7 @@ let token_ht =
          ("{BLK}", blk); ("{WHT}", wht); ("{RED}", red); ("{CYN}", cyn);
          ("{PUR}", pur); ("{GRN}", grn); ("{LGRN}", lgrn); ("{BLU}", blu);
          ("{LBLU}", lblu); ("{YEL}", yel); ("{ORG}", org); ("{BRN}", brn);
-         ("{LRED}, lred); ({PNK}", pnk); ("{DGRY}", dgry); ("{MGRY}", mgry);
+         ("{LRED}", lred); ("{PNK}", pnk); ("{DGRY}", dgry); ("{MGRY}", mgry);
          ("{LGRY}", lgry);
          (* charset selection *)
          ("{RVSON}", rvson); ("{RVSOFF}", rvsoff); ("{SWON}", swon);
@@ -277,32 +293,31 @@ let token_ht =
          ("{F1}", f1); ("{F2}", f2); ("{F3}", f3); ("{F4}", f4); ("{F5}", f5);
          ("{F6}", f6); ("{F7}", f7); ("{F8}", f8);
          (* other keys *)
-         ("{STOP}", stop); ("{RUN}", run); ("{RET}", ret); ("{SHRET}", shret);
-         ("{HOME}", home); ("{CLR}", clr); ("{DEL}", del); ("{INST}", inst);
-         ("{SHSPC}", shspc);
-         (* control+key & cbm+key combinations *)
-         ("{CTLPOUND}", ctl pound); ("{CTLUARR}", ctl uarr);
-         ("{CTLLARR}", ctl larr);
+         ("{STOP}", stop); ("{RUN}", run); ("{CR}", cr); ("{HOME}", home);
+         ("{CLR}", clr); ("{DEL}", del); ("{INST}", inst);
+         ("{SHF-SPC}", shf_spc); ("{SHF-RET}", shf_ret);
+         ("{CTL-LARR}", ctl_larr); ("{CTL-UARR}", ctl_uarr);
+         ("{CTL-POUND}", ctl_pound);
          (* misc *)
          ("{NUL}", nul)
-    ]))
+    ])
 
 let of_token token =
   try Hashtbl.find token_ht token with Not_found ->
-    if String.length token = 6 && token.[5] = '}' then
-      match String.sub token 0 3 with
-      | "{CTL" -> ctl (token.[4])
-      | "{CBM" -> cbm (token.[4])
+    if String.length token = 7 && token.[6] = '}' then
+      match String.sub token 0 5 with
+      | "{CTL-" -> ctl token.[5]
+      | "{CBM-" -> cbm token.[5]
       | _ -> failwith "Petscii.of_token"
     else failwith "Petscii.of_token"
 
 let of_string str =
   let valid_str_regexp = Str.regexp {|^\([^{}]*{[^{}]+}\)*[^{}]*$|} in
   let token_regexp = Str.regexp {|{[^{}]+}|} in
-  let str' = String.map of_char str in
-  if Str.string_match valid_str_regexp str' 0 then
-    Str.global_substitute
-      token_regexp
-      (fun _ -> String.make 1 (of_token (Str.matched_string str')))
-      str'
+  if Str.string_match valid_str_regexp str 0 then
+    str
+    |> Str.global_substitute
+         token_regexp
+         (fun _ -> String.make 1 (of_token (Str.matched_string str)))
+    |> String.map of_char
   else failwith "Petscii.of_string"

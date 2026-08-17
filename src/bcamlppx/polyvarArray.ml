@@ -1,15 +1,3 @@
-(* ——————————————————————————————————————————————————————————————————————
-   Progetto BreadCaml / The BreadCaml Project
-   Copyright (C) 21-Apr-2026 Piero Furiesi
-   
-   Questo  programma  è software  libero;  può  essere ridistribuito  e/o
-   modificato nei termini della licenza GNU GPL ver. 2,  come specificato
-   nel file LICENZA-it nella cartella principale del progetto.
-   
-   This program is  free software; you can redistribute  it and/or modify
-   it under the terms of the GNU  General Public License (GPL) ver. 2, as
-   specified in the LICENSE-en file in the project root folder.
-   —————————————————————————————————————————————————————————————————————— *)
 let a = [|
 "A1s400"; "A1s401"; "A1s402"; "A1s403"; "A1s404"; "A1s405"; "A1s406"; "A1s407";
 "A1s408"; "A1s409"; "A1s40A"; "A1s40B"; "A1s40C"; "A1s40D"; "A1s40E"; "A1s40F";

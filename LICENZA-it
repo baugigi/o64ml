@@ -16,12 +16,13 @@ versione 2, il cui testo integrale è incluso in calce al presente file
   Per le componenti e le librerie di terze parti si applicano i regimi
 di licenza di seguito specificati:
 
-  1. Il  file "acme-crossass-code.tar.bz2"  nella cartella  radice del
-     Progetto  BreadCaml  è  una  mera  aggregazione  di  un  archivio
+  1. Il  file "acme-crossass-code.tar.bz2"  nella cartella  principale
+     del Progetto  BreadCaml è  una mera  aggregazione di  un archivio
      compresso contenente  una distribuzione del  cross-assembler ACME
      di  Marco Baye  (https://sourceforge.net/projects/acme-crossass),
-     rilasciato nei termini della  GNU GENERAL PUBLIC LICENSE versione
-     2 (si veda "docs/COPYING", in inglese, in detto archivio).
+     rilasciato  nei termini  della GNU  GENERAL PUBLIC  LICENSE (GPL)
+     versione  2  (si  veda   "docs/COPYING",  in  inglese,  in  detto
+     archivio).
 
   2. Tutti  i file  nella cartella  "src/stdlib" sono  il prodotto  di
      modifiche  effettuate da  Piero  Furiesi  alla libreria  standard
@@ -32,14 +33,15 @@ di licenza di seguito specificati:
      cosiddetta  "OCaml  LGPL  Linking  Exception",  il  cui  testo  è
      disponibile nel file "LICENSE" (in inglese) in detta cartella.
 
-  3. Tutti  i  file  nella cartella  "src/breadcaml/ocamlclean"  fanno
-     parte   del  progetto   OCamlclean  di   Benoît  Vaugon   (vedere
-     https://github.com/bvaugon/ocamlclean) distribuito in origine con
-     il "Contrat de  licence de logiciel libre CeCILL"  / "CeCILL free
-     software license agreement" (vedere  "LICENSE-fr", in francese, o
-     "LICENSE-en", in  inglese, in detta  cartella) e, in  accordo con
-     l'art.   5.3.4  di detta  licenza,  sono  integrati nel  Progetto
-     BreadCaml e ridistribuiti con licenza GNU GPL versione 2.
+  3. Tutti  i file nella cartella  "src/bcamlc/ocamlclean" fanno parte
+     del    progetto    OCamlclean    di   Benoît    Vaugon    (vedere
+     https://github.com/bvaugon/ocamlclean),  distribuito  in  origine
+     con il  "Contrat de licence  de logiciel libre CeCILL"  / "CeCILL
+     free   software   license   agreement"   versione   2.0   (vedere
+     "LICENSE-fr", in  francese, o "LICENSE-en", in  inglese, in detta
+     cartella);  essi  sono integrati  nel  Progetto  BreadCaml e,  in
+     conformità all'Articolo 5.3.4 di detta licenza, ridistribuiti nei
+     termini della GNU GENERAL PUBLIC LICENSE (GPL) versione 2.
 
 
 
@@ -91,8 +93,8 @@ risarcimento:
   In  caso  di  difformità normative,  conflitti  d'interpretazione  o
 limitazioni poste  dalle leggi locali, prevalgono  inderogabilmente le
 disposizioni di esclusione di garanzia e limitazione di responsabilità
-contenute  negli Articoli  11 e  12 della  GNU General  Public License
-(GPL).
+contenute  negli Articoli  11 e  12 della  GNU GENERAL  PUBLIC LICENSE
+(GPL) versione 2.
 
 
 Buon divertimento con BreadCaml!

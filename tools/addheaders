@@ -1,16 +1,4 @@
 #!/bin/bash
-#  ——————————————————————————————————————————————————————————————————————
-#  Progetto BreadCaml / The BreadCaml Project
-#  Copyright (C) 21-Apr-2026 Piero Furiesi
-#  
-#  Questo  programma  è software  libero;  può  essere ridistribuito  e/o
-#  modificato nei termini della licenza GNU GPL ver. 2,  come specificato
-#  nel file LICENZA-it nella cartella principale del progetto.
-#  
-#  This program is  free software; you can redistribute  it and/or modify
-#  it under the terms of the GNU  General Public License (GPL) ver. 2, as
-#  specified in the LICENSE-en file in the project root folder.
-#  ——————————————————————————————————————————————————————————————————————
 
 # For each header, you must define the following variables/arrays:
 # - KEY: identification key;
@@ -40,12 +28,14 @@ function print_GPLv2 {  # $1: line prefix
 GPLv2="$(cat <<EOF
 
 Questo  programma  è software  libero;  può  essere ridistribuito  e/o
-modificato nei termini della licenza GNU GPL ver. 2,  come specificato
-nel file LICENZA-it nella cartella principale del progetto.
+modificato nei termini della GNU GENERAL PUBLIC LICENSE (GPL) versione
+2, come specificato nel file  LICENZA-it nella cartella principale del
+progetto.
 
 This program is  free software; you can redistribute  it and/or modify
-it under the terms of the GNU  General Public License (GPL) ver. 2, as
-specified in the LICENSE-en file in the project root folder.
+it under the terms of the  GNU GENERAL PUBLIC LICENSE (GPL) version 2,
+as specified in the LICENSE-en file in the project root folder.
+
 EOF
 )"
 
@@ -103,19 +93,23 @@ HEADER["$KEY"]="$(cat <<EOF
    Copyright (C) $DATE $AUTHOR
 
                                      SOFTWARE DI TERZI/3RD PARTY SOFTWARE
-   OCaml Core System - Stdlib          (C) 1996 INRIA - https://ocaml.org
+   OCaml Core System                   (C) 1996 INRIA <https://ocaml.org>
 
    Modifiche/Modifications: $DATE $AUTHOR
 
-   Questo file  è distribuito con  licenza GNU LGPL 2.1,  con l’eccezione
-   riportata nel file LICENSE (in  inglese).  Il codice originale rimosso
-   o sostituito  è incluso tra (*--  e --*); (*++ e  ++*) identificano le
-   aggiunte, {i {b BreadCaml Note} testo… } i nuovi commenti di OCamldoc.
+   Questo file è distribuito nei  termini della GNU LESSER GENERAL PUBLIC
+   LICENSE (LGPL) versione 2.1, con l’eccezione indicata nel file LICENSE
+   (in inglese).
+   Modifiche: il codice originale  escluso tramite commentatura è incluso
+   tra (*-- e --*); (*++ e  ++*) delimitano il nuovo codice; il marcatore
+   {i {b BreadCaml Note} testo…  } indica nuovi commenti di OCamldoc.
 
-   This file  is distributed  under the  GNU LGPL  2.1 license,  with the
-   exception stated in the LICENSE  file. (*-- and --*) indicate original
-   code that has been removed/replaced; (*++ and ++*) indicate additions;
-   {i {b BreadCaml Note} text…  } indicates new OCamldoc comments.
+   This file  is distributed under  the terms  of the GNU  LESSER GENERAL
+   PUBLIC LICENSE  (LGPL) version 2.1,  with the exception stated  in the
+   LICENSE  file.
+   Modifications:  (*-- and  --*)  enclose original  code  that has  been
+   commented out; (*++  and ++*) delimit new code  sections; new OCamldoc
+   comments are marked with: {i {b BreadCaml Note} text…  }.
    $LINE *)
 EOF
 )"
@@ -131,17 +125,17 @@ HEADER["$KEY"]="$(cat <<EOF
    Copyright (C) $DATE $AUTHOR
 
                                      SOFTWARE DI TERZI/3RD PARTY SOFTWARE
-   OCamlclean       Benoît Vaugon - https://github.com/bvaugon/ocamlclean
+   OCamlclean   (C) Benoît Vaugon <https://github.com/bvaugon/ocamlclean>
 
    Questo file, originariamente distribuito con licenza CeCILL, è incluso
-   nel Progetto Breadbin e, in accordo  con l′Art. 5.3.4 di detta licenza
-   (vedere LICENSE-en, in  inglese, o LICENSE-fr, in  francese, in questa
-   cartella), è ridistribuito con licenza GNU GPL versione 2.
+   nel Progetto  BreadCaml e, in  conformità all′Articolo 5.3.4  di detta
+   licenza — vedere LICENSE-fr, in francese, o LICENSE-en, in inglese, in
+   questa cartella — è ridistribuito con licenza GNU GPL versione 2.
 
    This  file,  originally  distributed  under  the  CeCILL  license,  is
-   included in the Breadbin Project and, in accordance with Article 5.3.4
-   of that license (see LICENSE-en, in English, or LICENSE-fr, in French,
-   in this directory), is redistributed under the GNU GPL version 2.
+   included in  the BreadCaml Project  and, pursuant to Section  5.3.4 of
+   that license —  see LICENSE-fr, in French, or  LICENSE-en, in English,
+   in this directory — is redistributed under the GNU GPL version 2.
    $LINE *)
 EOF
 )"
@@ -154,9 +148,9 @@ function help_message {
     cat <<EOF
 $0 [ -p | -d | --help ]
 
-When run without options, it adds headers to all files in the project.
-The -p option displays the text of the available headers.
-The -d option removes all headers from all files in the project.
+When run without options, it adds headers to all Breadcaml files.
+The ‘-p’ option displays the text of all available headers.
+The ‘-d’ option removes all headers from all Breadcaml files.
 It correctly handles files with #! on the first line.
 EOF
 }

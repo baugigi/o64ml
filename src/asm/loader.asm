@@ -1,15 +1,3 @@
-;; ——————————————————————————————————————————————————————————————————————
-;; Progetto BreadCaml / The BreadCaml Project
-;; Copyright (C) 21-Apr-2026 Piero Furiesi
-;; 
-;; Questo  programma  è software  libero;  può  essere ridistribuito  e/o
-;; modificato nei termini della licenza GNU GPL ver. 2,  come specificato
-;; nel file LICENZA-it nella cartella principale del progetto.
-;; 
-;; This program is  free software; you can redistribute  it and/or modify
-;; it under the terms of the GNU  General Public License (GPL) ver. 2, as
-;; specified in the LICENSE-en file in the project root folder.
-;; ——————————————————————————————————————————————————————————————————————
 
 ;; ACME command-line arguments:
 ;;   -Dcaml_SHOWMEM=1                Show program memory usage
@@ -169,14 +157,14 @@ caml_loader
         STA ACCU
         LDA # >caml_std_exn[.exn]
         STA ACCU + 1
-        JMP RAISE
+        JMP caml_RAISE
 }
 !macro  caml_raise .exn, .str {                 ;As above, with a string arg.
         LDA # <.blk
         STA ACCU
         LDA # >.blk
         STA ACCU + 1
-        JMP RAISE
+        JMP caml_RAISE
         !align $01, $00
         !byte String_tag, (.h - .s) div 2
 .s      +caml_string .str
@@ -361,7 +349,7 @@ caml_syserr
         STA ACCU
         LDA # >@blk
         STA ACCU + 1                            ; ACCU := exn address
-        JMP RAISE                               ; raise Sys_error(error no.)
+        JMP caml_RAISE                          ; raise Sys_error(error no.)
         !align $01, $00                         ;Exception block:
         !byte 0, 2                              ; Tag, Size
 @blk    !word caml_std_exn[Sys_error]           ; Field0 = Sys_error exn

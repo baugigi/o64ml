@@ -1,15 +1,3 @@
-(* ——————————————————————————————————————————————————————————————————————
-   Progetto BreadCaml / The BreadCaml Project
-   Copyright (C) 21-Apr-2026 Piero Furiesi
-   
-   Questo  programma  è software  libero;  può  essere ridistribuito  e/o
-   modificato nei termini della licenza GNU GPL ver. 2,  come specificato
-   nel file LICENZA-it nella cartella principale del progetto.
-   
-   This program is  free software; you can redistribute  it and/or modify
-   it under the terms of the GNU  General Public License (GPL) ver. 2, as
-   specified in the LICENSE-en file in the project root folder.
-   —————————————————————————————————————————————————————————————————————— *)
 (* Show info *)
 let show = function
   | Cmdline.Where ->  print_endline Config.libdir
@@ -27,17 +15,17 @@ let show = function
 (* Sys.command wrapper *)
 let sys_command ~verbose ~command =
   if verbose then
-    Printf.printf "BreadCaml> Executing: ‘%s’\n%!" command;
+    Printf.printf "BreadCaml> Executing: '%s'\n%!" command;
   match Sys.command command with
   | 0 -> ()
   | n -> Printf.eprintf
-           "BreadCaml> Error: ‘%s’ exited with status code %u.\n%!" command n;
+           "BreadCaml> Error: '%s' exited with status code %u.\n%!" command n;
          raise Exit
 
 (* Sys.remove wrapper *)
 let sys_remove file =
   try Sys.remove file
-  with _ -> Printf.printf "BreadCaml> Warning: file ‘%s’ not removed\n%!" file
+  with _ -> Printf.printf "BreadCaml> Warning: file '%s' not removed\n%!" file
 
 (* Run ocamlc *)
 let ocamlc ?bytefile ~verbose cmdline =

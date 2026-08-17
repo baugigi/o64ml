@@ -1,17 +1,5 @@
-;; ——————————————————————————————————————————————————————————————————————
-;; Progetto BreadCaml / The BreadCaml Project
-;; Copyright (C) 21-Apr-2026 Piero Furiesi
-;; 
-;; Questo  programma  è software  libero;  può  essere ridistribuito  e/o
-;; modificato nei termini della licenza GNU GPL ver. 2,  come specificato
-;; nel file LICENZA-it nella cartella principale del progetto.
-;; 
-;; This program is  free software; you can redistribute  it and/or modify
-;; it under the terms of the GNU  General Public License (GPL) ver. 2, as
-;; specified in the LICENSE-en file in the project root folder.
-;; ——————————————————————————————————————————————————————————————————————
 
-!zone caml_RUNTIME {
+	!zone caml_RUNTIME {
 caml_runtime
 
         .dummy = $1234                          ;dummy arg. for self-modifying
@@ -66,18 +54,7 @@ caml_stack_overflow
 ;; Code to be assembled only ifdef caml_INTERP is indented a tab-stop more.
 ;; -----------------------------------------------------------------------------
 
-ACCL
-!ifdef caml_gen_ACCL {                  ;{Y = <2n}
-        LDA (SP),Y                              ;Read SP[n], lo byte
-        STA ACCU                                ;and save it in ACCU
-        INY                                     ;Increment index
-        LDA (SP),Y                              ;Read SP[n], hi byte
-        STA ACCU + 1                            ;and save it in ACCU+1
-        LDY # 0                                 ;Reset Y
-        +caml_NEXT                      ;{Y = 0}
-}
-
-ACCH
+caml_ACCH
 !ifdef caml_gen_ACCH {
   !ifdef caml_INTERP {
                 JSR caml_interp_getarg
@@ -99,7 +76,18 @@ ACCH
         +caml_NEXT                      ;{Y = 0}
 }
 
-PUSH
+caml_ACCL
+!ifdef caml_gen_ACCL {                  ;{Y = <2n}
+        LDA (SP),Y                              ;Read SP[n], lo byte
+        STA ACCU                                ;and save it in ACCU
+        INY                                     ;Increment index
+        LDA (SP),Y                              ;Read SP[n], hi byte
+        STA ACCU + 1                            ;and save it in ACCU+1
+        LDY # 0                                 ;Reset Y
+        +caml_NEXT                      ;{Y = 0}
+}
+
+caml_PUSH
 !ifdef caml_gen_PUSH {                  ;{Y = 0}
         LDA SP                                  ;Read the stack pointer, lo
         BNE +                                   ;If zero
@@ -118,13 +106,13 @@ PUSH
         RTS                             ;{X = x, Y = 0}
 }
 
-PHACC
+caml_PHACC
 !ifdef caml_gen_PHACC {
-                JSR PUSH
-                JMP ACCH
+                JSR caml_PUSH
+                JMP caml_ACCH
 }
 
-POP1
+caml_POP1
 !ifdef caml_gen_POP1 {                  ;{Y = y}
         INC SP                                  ;Increment stack pointer, lo
         INC SP                                  ;twice (n.b. word aligned)
@@ -133,7 +121,7 @@ POP1
 +       +caml_NEXT                      ;{Y = y}
 }
 
-POPN
+caml_POPN
 !ifdef caml_gen_POPN {
   !ifdef caml_INTERP {
                 JSR caml_interp_getarg
@@ -152,7 +140,7 @@ POPN
         +caml_NEXT                      ;{Y = 0}
 }
 
-ASSIGNH
+caml_ASSIGNH
 !ifdef caml_gen_ASSIGNH {
   !ifdef caml_INTERP {
                 JSR caml_interp_getarg
@@ -164,9 +152,9 @@ ASSIGNH
         CLC                                     ;Prepare ADC
         ADC SP + 1                              ;Add >2n to SP+1
         STA SP + 1                              ;and save it
-}       ;; fallthrough ASSIGNL
+}       ;; fallthrough caml_ASSIGNL
 
-ASSIGNL
+caml_ASSIGNL
 !ifdef caml_gen_ASSIGNL {               ;{A = >2n, Y = <2n, SP+1 = x}
         LDA ACCU                                ;Copy ACCU
         STA (SP),Y                              ;to SP[n], lo byte
@@ -183,7 +171,7 @@ ASSIGNL
         +caml_NEXT                      ;{X = x, Y = 0}
 }
 
-ENVACC      
+caml_ENVACC      
 !ifdef caml_gen_ENVACC {                ;{Y = <2n}
         LDA (ENV),Y
         STA ACCU
@@ -194,7 +182,7 @@ ENVACC
         +caml_NEXT                      ;{Y = 0}
 }
 
-;; PUSHRETADDR and APPLY n, APPLY1, APPLY2, APPLY3:
+;; PUSHRETADDR and caml_APPLY n, APPLY1, APPLY2, APPLY3:
 ;;
 ;; A closure application to n arguments is usually compiled by ocamlc by
 ;; emitting a PUSHRETADDR (which pushes the return address onto the stack),
@@ -202,7 +190,7 @@ ENVACC
 ;; APPLY n instruction that jump to the closure code; but when n < 4, ocamlc
 ;; skips the PUSHRETADDR: its work is left up to APPLY1 (or APPLY2, or APPLY3).
 
-PHRET      
+caml_PHRET      
 !ifdef caml_gen_PHRET {
   !ifdef caml_INTERP {
                 JSR caml_interp_getarg
@@ -231,7 +219,7 @@ PHRET
         +caml_NEXT                      ;{Y = 0}
 }
 
-APPLY13
+caml_APPLY13
 !ifdef caml_gen_APPLY13 {
   !ifdef caml_INTERP {
                 SBC # $41 -1                    ;-1 as C=0; A:=2n-1=2*opc-$41
@@ -277,9 +265,9 @@ APPLY13
         LDA XARGS                               ;STACK[n+2] := XARGS
         STA (SP),Y
         LDY @N2M1                       ;{Y = 2n-1}
-}       ;; fallthrough APPLY
+}       ;; fallthrough caml_APPLY
 
-APPLY
+caml_APPLY
 !ifdef caml_gen_APPLY {
   !ifdef caml_INTERP {
                 @PC = PC
@@ -300,7 +288,7 @@ APPLY
         +caml_JMP_CODEPTR @PC
 }                                       ;{Y = 0}
 
-APPTRMN
+caml_APPTRMN
 !ifdef caml_gen_APPTRMN {
   !ifdef caml_INTERP {
                 JSR caml_interp_getarg
@@ -313,11 +301,11 @@ APPTRMN
         ADC XARGS                               ;XARGS :=
         STA XARGS                               ;  Val_Int(Int_Val(XARGS)+n-1)
   !ifdef caml_INTERP {
-                JMP APPTRM1
+                JMP caml_APPTRM1
   }     ;; ifndef caml_INTERP
-}       ;; fallthrough APPTRM1
+}       ;; fallthrough caml_APPTRM1
 
-APPTRM1
+caml_APPTRM1
 !ifdef caml_gen_APPTRM1 {
   !ifdef caml_INTERP {
                 @PC = PC
@@ -362,7 +350,7 @@ APPTRM1
 ;; When the new closure is called, RESTART will push the arguments onto the
 ;; stack again and fallthrough GRAB.
 
-RESTART
+caml_RESTART
 !ifdef caml_gen_RESTART {               ;{}
         @ENV0 = TMP
         LDA ENV                                 ;@ENV0 := ENV
@@ -417,7 +405,7 @@ RESTART
         +caml_NEXT                      ;{Y = 0}
 }
 
-GRAB
+caml_GRAB
 !ifdef caml_gen_GRAB {
         @offset = caml_restart_len + caml_grab_len
   !ifdef caml_INTERP {
@@ -482,10 +470,10 @@ GRAB
         STA SP
         BCC +
         INC SP + 1
-+       ;; fallthrough GORETURN         ;{Y = 0}
++       ;; fallthrough caml_GORETURN         ;{Y = 0}
 }
 
-GORETURN
+caml_GORETURN
 !ifdef caml_gen_GORETURN {
   !ifdef caml_INTERP {
                 @PC = PC
@@ -523,7 +511,7 @@ GORETURN
 ;; instead, it assumes that there is a closure in the accumulator and gives it
 ;; immediate control.
 
-RETURN
+caml_RETURN
 !ifdef caml_gen_RETURN {
   !ifdef caml_INTERP {
                 @PC = PC
@@ -542,7 +530,7 @@ RETURN
         CLC
 +       LDA XARGS                               ;If XARGS - Val_one < Val_zero
         SBC # (Val_one & $FE) -1                ;(-1 as carry is clear)
-        BCC GORETURN                            ;then get return frame
+        BCC caml_GORETURN                            ;then get return frame
         STA XARGS                               ;else XARGS := XARGS - Val_one
         LDA ACCU
         STA ENV                                 ; ENV := ACCU
@@ -557,7 +545,7 @@ RETURN
         +caml_JMP_CODEPTR @PC           ;{Y = 0}
 }
 
-CLOSURE
+caml_CLOSURE
 !ifdef caml_gen_CLOSURE {
         @CODE   = TMP
         @NM1    = TMP + 2
@@ -620,7 +608,7 @@ CLOSURE
         +caml_NEXT                      ;{Y = 0}
 }
 
-CLOSREC
+caml_CLOSREC
 !ifdef caml_gen_CLOSREC {
         @NVAR   = TMP
         @NFUN   = TMP + 1
@@ -654,7 +642,7 @@ CLOSREC
         JSR caml_alloc                          ; and allocate the closure
         LDA @NVAR                               ;If @NVAR>0 then push ACCU on the
         BEQ +                                   ; stack (it'll be popped out and
-        JSR PUSH                                ; inserted into the closure)
+        JSR caml_PUSH                                ; inserted into the closure)
 +       LDA BLK
         STA ACCU                                ;ACCU := closure address
         STA @ADR                                ;@ADR := closure address
@@ -755,7 +743,7 @@ CLOSREC
         +caml_NEXT                      ;{Y = 0}
 }
 
-OFSCL0
+caml_OFSCL0
 !ifdef caml_gen_OFSCL0 {
         LDA ENV                         ;{Y = y}
         STA ACCU
@@ -764,7 +752,7 @@ OFSCL0
         +caml_NEXT                      ;{Y = 0}
 }
 
-OFSCLN
+caml_OFSCLN
 !ifdef caml_gen_OFSCLN {
   !ifdef caml_INTERP {
                 JSR caml_interp_getarg
@@ -782,7 +770,7 @@ OFSCLN
         +caml_NEXT                      ;{Y = 0}
 }
 
-SETGLB
+caml_SETGLB
 !ifdef caml_gen_SETGLB {
   !ifdef caml_INTERP {
                 JSR caml_interp_getarg
@@ -805,7 +793,7 @@ SETGLB
         +caml_NEXT                      ;{Y = 0}
 }       
 
-MKBLK
+caml_MKBLK
 !ifdef caml_gen_MKBLK {                 ;{A = tag, X = size, Y = 0}
         JSR caml_alloc
         LDA ACCU
@@ -846,7 +834,7 @@ MKBLK
 ++      +caml_NEXT                      ;{Y = 0}
 }
 
-MKFBLK
+caml_MKFBLK
 !ifdef caml_gen_MKFBLK {
   !ifdef caml_INTERP {
                 JSR caml_interp_getarg
@@ -883,7 +871,7 @@ MKFBLK
 ++      +caml_NEXT                      ;{Y = 0}
 }
 
-GETFLDN
+caml_GETFLDN
 !ifdef  caml_gen_GETFLDN {
   !ifdef caml_INTERP {
                 JSR caml_interp_getarg
@@ -892,9 +880,9 @@ GETFLDN
         BCC +
         INC ACCU + 1
 +       TAY                             ;{Y = <2n}
-}       ;; fallthrough GETFLD0
+}       ;; fallthrough caml_GETFLD0
 
-GETFLD0
+caml_GETFLD0
 !ifdef caml_gen_GETFLD0 {               ;{Y = <2n}
         LDA (ACCU),Y
         TAX
@@ -906,7 +894,7 @@ GETFLD0
         +caml_NEXT                      ;{Y = 0}
 }
 
-SETFLDN
+caml_SETFLDN
 !ifdef caml_gen_SETFLDN {
   !ifdef caml_INTERP {
                 JSR caml_interp_getarg
@@ -917,11 +905,11 @@ SETFLDN
         CLC
 +       ADC ACCU
         STA ACCU
-        BCC SETFLD0
+        BCC caml_SETFLD0
         INC ACCU + 1
-}       ;; fallthrough SETFLD0
+}       ;; fallthrough caml_SETFLD0
 
-SETFLD0
+caml_SETFLD0
 !ifdef caml_gen_SETFLD0 {               ;{Y = 0}
         LDA (SP),Y
         STA (ACCU),Y
@@ -939,12 +927,12 @@ SETFLD0
         +caml_NEXT                      ;{Y = 0}
 }
 
-GETFFLDN
+caml_GETFFLDN
 !ifdef caml_gen_GETFFLDN {
   !ifdef caml_INTERP {
                 JSR caml_interp_getarg
                 TAX                             ;set flags according to A
-                BEQ GETFFLD0
+                BEQ caml_GETFFLD0
                 ASL
                 BCC +
                 INC ACCU + 1
@@ -955,9 +943,9 @@ GETFFLDN
         BCC +
         INC ACCU + 1                    ;{Y = y, ACCU+1:ACCU = &Field(ACCU,n)}
 +
-}       ;; fallthrough GETFFLD0 
+}       ;; fallthrough caml_GETFFLD0 
 
-GETFFLD0
+caml_GETFFLD0
 !ifdef caml_gen_GETFFLD0 {
         LDX # Double_wosize
         LDA # Double_tag
@@ -970,12 +958,12 @@ GETFFLD0
         +caml_NEXT                      ;{Y = 0}
 }
 
-SETFFLDN
+caml_SETFFLDN
 !ifdef caml_gen_SETFFLDN {
   !ifdef caml_INTERP {
                 JSR caml_interp_getarg
                 TAX                             ;set flags according to A
-                BEQ SETFFLD0
+                BEQ caml_SETFFLD0
                 ASL
                 BCC +
                 INC ACCU + 1
@@ -983,11 +971,11 @@ SETFFLDN
         CLC                                     ;ACCU := &Field(ACCU, n)
         ADC ACCU
         STA ACCU
-        BCC SETFFLD0
+        BCC caml_SETFFLD0
         INC ACCU + 1                    ;{Y = y, ACCU+1:ACCU = &Field(ACCU,n)}
-}       ;; fallthrough SETFFLD0
+}       ;; fallthrough caml_SETFFLD0
 
-SETFFLD0
+caml_SETFFLD0
 !ifdef caml_gen_SETFFLD0 {
         LDA (SP),Y
         STA TMP
@@ -1004,7 +992,7 @@ SETFFLD0
         +caml_NEXT                      ;{Y = 0}
 }
 
-VECLEN
+caml_VECLEN
 !ifdef caml_gen_VECLEN {                ;{}
         LDY # -2
         DEC ACCU + 1
@@ -1041,7 +1029,7 @@ VECLEN
         +caml_NEXT                      ;{Y = 0}
 }
 
-GETVEC
+caml_GETVEC
 !ifdef caml_gen_GETVEC {                ;{Y = 0}
         LDA (SP),Y                              ;Val_Int(index), lo
         STA TMP
@@ -1063,7 +1051,7 @@ GETVEC
         +caml_NEXT                      ;{Y = 0}
 }
 
-SETVEC
+caml_SETVEC
 !ifdef caml_gen_SETVEC {                ;{Y = 0}
         LDA (SP),Y                              ;Val_Int(index), lo
         STA TMP
@@ -1093,7 +1081,7 @@ SETVEC
         +caml_NEXT                      ;{Y = 0}
 }
 
-GETCHR
+caml_GETCHR
 !ifdef caml_gen_GETCHR {                ;{Y = 0}
         INY
         LDA (SP),Y
@@ -1122,7 +1110,7 @@ GETCHR
 +       +caml_NEXT                      ;{Y = 0}
 }
 
-SETCHR
+caml_SETCHR
 !ifdef caml_gen_SETCHR {                ;{Y = 0}
         LDY # 3
         LDA (SP),Y
@@ -1157,7 +1145,7 @@ SETCHR
 +       +caml_NEXT                      ;{Y = 0}
 }
 
-SWITCHP      
+caml_SWITCHP      
 !ifdef caml_gen_SWITCHP {
   !ifdef caml_INTERP {
                 @adr = PC
@@ -1182,7 +1170,7 @@ SWITCHP
 @jmp    +caml_JMP_CODEPTR .dummy                ;SMC: JMP (adr + 2n + 2i)
 }                                       ;{Y = 0}
 
-SWITCHI      
+caml_SWITCHI      
 !ifdef caml_gen_SWITCHI {
   !ifdef caml_INTERP {
                 @adr = PC
@@ -1198,7 +1186,7 @@ SWITCHI
 @jmp    +caml_JMP_CODEPTR .dummy                ;SMC: JMP (adr+2i)
 }                                       ;{Y = y}
 
-BOOLNOT
+caml_BOOLNOT
 !ifdef caml_gen_BOOLNOT {               ;{Y = y}
         LDA ACCU
         EOR # %00000010                         ;Invert bit #1
@@ -1206,7 +1194,7 @@ BOOLNOT
         +caml_NEXT                      ;{Y = y}
 }
 
-PHTRP      
+caml_PHTRP      
 !ifdef caml_gen_PHTRP {
   !ifdef caml_INTERP {
                 JSR caml_interp_getarg
@@ -1246,7 +1234,7 @@ PHTRP
         +caml_NEXT                      ;{Y = 0}
 }
 
-POPTRP      
+caml_POPTRP      
 !ifdef caml_gen_POPTRP {                ;{}
         LDY # 2
         LDA (SP),Y
@@ -1264,7 +1252,7 @@ POPTRP
         +caml_NEXT                      ;{Y = 0}
 }
 
-RAISE      
+caml_RAISE      
 ;; !ifdef caml_gen_RAISE                        ;Always assembled
 !ifdef caml_INTERP {
                 @PC = PC
@@ -1310,14 +1298,14 @@ caml_hw_stack_ptr = * + 1
         INC SP + 1
 +       +caml_JMP_CODEPTR @PC           ;{Y = 0 or HALT}
 
-CCALL
+caml_CCALL
 !ifdef caml_gen_CCALL {
   !ifdef caml_INTERP {
                 SBC # $BA -1                    ;-1 as C=0; A:=2(n-1)=2*opc-$BA
                 LSR                             ;A:=n-1
                 CMP # 5
                 BCC +
-                JSR caml_interp_getarg          ;if CCALL n, get n - 1
+                JSR caml_interp_getarg          ;if caml_CCALL n, get n - 1
 +               PHA                             ;save #args_on_stack
                 JSR caml_interp_getarg          ;get prim.idx
                 TAX
@@ -1343,7 +1331,7 @@ CCALL
 ++      +caml_NEXT                      ;{Y = 0}
 }
 
-NEGINT
+caml_NEGINT
         ;; Val_Int(-n) = Val_Int(0) + 1 - Val_Int(n)
 !ifdef caml_gen_NEGINT {                ;{Y = 0}
         LDA # Val_zero + 1                      ;Load <Val_Int(0)+1 in A
@@ -1356,14 +1344,14 @@ NEGINT
         +caml_NEXT                      ;{Y = 0}
 }
 
-!macro  ARLOGOP @OP {                   ;{Y = 0}
+!macro  caml_ALU_op @OP {               ;{Y = 0}
         LDA ACCU
   !if    @OP = '+' { AND # $FE : CLC : ADC (SP),Y
   } elif @OP = '-' { SEC : SBC (SP),Y : ORA # 1
   } elif @OP = '&' { AND (SP),Y
   } elif @OP = '|' { ORA (SP),Y
   } elif @OP = 'X' { EOR (SP),Y : ORA # 1
-  } else {!serious "ARLOGOP: Invalid argument"}
+  } else {!serious "caml_ALU_op: Invalid argument"}
         STA ACCU
         INC SP
         LDA ACCU + 1
@@ -1372,7 +1360,7 @@ NEGINT
   } elif @OP = '&' { AND (SP),Y
   } elif @OP = '|' { ORA (SP),Y
   } elif @OP = 'X' { EOR (SP),Y
-  } else {!serious "ARLOGOP: Invalid argument"}
+  } else {!serious "caml_ALU_op: Invalid argument"}
         STA ACCU + 1
         INC SP
         BNE +
@@ -1380,22 +1368,22 @@ NEGINT
 +       +caml_NEXT                      ;{Y = 0}
 }
 
-ADDINT  ;;Val_Int(m+n)=Val_Int(m)-1+Val_Int(n)
-!ifdef caml_gen_ADDINT { +ARLOGOP '+' }
+caml_ADDINT  ;;Val_Int(m+n)=Val_Int(m)-1+Val_Int(n)
+!ifdef caml_gen_ADDINT { +caml_ALU_op '+' }
 
-SUBINT  ;;Val_Int(m-n)=Val_Int(m)-Val_Int(n)+1
-!ifdef caml_gen_SUBINT { +ARLOGOP '-' }
+caml_SUBINT  ;;Val_Int(m-n)=Val_Int(m)-Val_Int(n)+1
+!ifdef caml_gen_SUBINT { +caml_ALU_op '-' }
 
-ANDINT  ;;Val_Int(m&n)=Val_Int(m)&Val_Int(n)
-!ifdef caml_gen_ANDINT { +ARLOGOP '&' }
+caml_ANDINT  ;;Val_Int(m&n)=Val_Int(m)&Val_Int(n)
+!ifdef caml_gen_ANDINT { +caml_ALU_op '&' }
 
-ORINT   ;;Val_Int(m|n)=Val_Int(m)|Val_Int(n)
-!ifdef caml_gen_ORINT  { +ARLOGOP '|' }
+caml_ORINT   ;;Val_Int(m|n)=Val_Int(m)|Val_Int(n)
+!ifdef caml_gen_ORINT  { +caml_ALU_op '|' }
 
-XORINT  ;;Val_Int(mXn)=Val_Int(m)XVal_Int(n)|1
-!ifdef caml_gen_XORINT { +ARLOGOP 'X' }
+caml_XORINT  ;;Val_Int(mXn)=Val_Int(m)XVal_Int(n)|1
+!ifdef caml_gen_XORINT { +caml_ALU_op 'X' }
 
-!macro  SHFOP @OP {                     ;{Y = 0}
+!macro  caml_SHF_op @OP {               ;{Y = 0}
         LDA (SP),Y                              ;load Val_Int(b)
         INC SP                                  ;pop(1)
         INC SP
@@ -1410,7 +1398,7 @@ XORINT  ;;Val_Int(mXn)=Val_Int(m)XVal_Int(n)|1
 - !if    @OP = "<<"  { ASL : ROL ACCU + 1
   } elif @OP = ">>"  { LSR ACCU + 1 : ROR
   } elif @OP = "->>" { SEC : ROR ACCU + 1 : ROR
-  } else {!serious "SHFOP: Invalid argument"}
+  } else {!serious "caml_SHF_op: Invalid argument"}
         DEX
         BNE -
         ORA # 1
@@ -1418,20 +1406,20 @@ XORINT  ;;Val_Int(mXn)=Val_Int(m)XVal_Int(n)|1
 +       +caml_NEXT                      ;{Y = 0}
 }
 
-LSLINT
-!ifdef caml_gen_LSLINT { +SHFOP "<<" }
+caml_LSLINT
+!ifdef caml_gen_LSLINT { +caml_SHF_op "<<" }
 
-LSRINT
-!ifdef caml_gen_LSRINT { +SHFOP ">>" }
+caml_LSRINT
+!ifdef caml_gen_LSRINT { +caml_SHF_op ">>" }
 
-ASRINT
+caml_ASRINT
 !ifdef caml_gen_ASRINT {
         BIT ACCU + 1                            ;test sign
-        BPL LSRINT                              ;+: do LSRINT
-        +SHFOP "->>"                            ;-: shift preserving sign
+        BPL caml_LSRINT                         ;+: do caml_LSRINT
+        +caml_SHF_op "->>"                      ;-: shift preserving sign
 }
 
-MULINT
+caml_MULINT
         ;; Val_Int(m * n) = (Val_Int(m) >> 1) * (Val_Int(n) - 1) + 1
 !ifdef caml_gen_MULINT {                ;{Y = 0}
         @N      = TMP                           ;Multiplicator
@@ -1482,9 +1470,9 @@ MULINT
         +caml_NEXT                      ;{Y = 0}
 }
 
-DIVMOD
+caml_DIVMOD
 !ifdef caml_gen_DIVMOD {                ;{Y = 0}
-        .REM    = TMP                           ;Remainder - SHARED WITH MODINT
+        .REM    = TMP                           ;Remainder - SHARED WITH caml_MODINT
         @DSR    = TMP + 2                       ;Divisor. Dividend in ACCU.
         @SIGNS  = TMP + 4                       ;bit 7,6 = quot,rem signs flags
         LDA ACCU
@@ -1569,9 +1557,9 @@ DIVMOD
         RTS                             ;{.REM=|Remainder|, ACCU=|Quotient|,
 }                                       ;       CNV=flags, Y = 0}
 
-DIVINT
+caml_DIVINT
 !ifdef caml_gen_DIVINT {                ;{Y = 0}
-        JSR DIVMOD                              ;Compute Q = |A| div |B|
+        JSR caml_DIVMOD                              ;Compute Q = |A| div |B|
         BCC ++                                  ;ACCU=Dividend=Val_zero, exit
         BMI +                                   ;Need to negate Quotient?
         ;SEC                                    ;no: ACCU := Val_Int(Q) = 2Q+1
@@ -1590,9 +1578,9 @@ DIVINT
 ++      +caml_NEXT                      ;{Y = 0}
 }
 
-MODINT
+caml_MODINT
 !ifdef caml_gen_MODINT {                ;{Y = 0}
-        JSR DIVMOD                              ;Compute R = |A| mod |B|
+        JSR caml_DIVMOD                              ;Compute R = |A| mod |B|
         BCC ++                                  ;ACCU=Dividend=Val_zero, exit
         BVS +                                   ;Need to negate Remainder?
         LDA .REM                                ;no: ACCU := Val_Int(R) = 2R+1
@@ -1615,71 +1603,74 @@ MODINT
 ++      +caml_NEXT                      ;{Y = 0}
 }
 
-EQ      
+caml_EQ      
 !ifdef caml_gen_EQ {                    ;{Y = 0}
         LDA (SP),Y
         INC SP
         CMP ACCU
-        BNE CMPRES_F
+        BNE caml_CMP_RES_F
         LDA (SP),Y
         CMP ACCU + 1
-        BNE CMPRES_F
-        BEQ CMPRES_T
+        BNE caml_CMP_RES_F
+        BEQ caml_CMP_RES_T
 }                                       ;{Y = 0}
 
-NEQ      
+caml_NEQ      
 !ifdef caml_gen_NEQ {                   ;{Y = 0}
         LDA (SP),Y
         INC SP
         CMP ACCU
-        BNE CMPRES_T
+        BNE caml_CMP_RES_T
         LDA (SP),Y
         CMP ACCU + 1
-        BNE CMPRES_T
-        BEQ CMPRES_F
+        BNE caml_CMP_RES_T
+        BEQ caml_CMP_RES_F
 }                                       ;{Y = 0}
 
-!macro  LTGEINT {                       ;{Y = 0}
+!macro	caml_CMP @CMP {                 ;{Y = 0}
+  !if @CMP = "<" | @CMP = ">=" {
         LDA ACCU
         CMP (SP),Y
         INC SP
         LDA ACCU + 1
         SBC (SP),Y
-        BVC +
-        EOR # $80
-+
-}                                       ;{Y = 0}
-
-!macro  LEGTINT {                       ;{Y = 0}
+  } elif @CMP = "<=" | @CMP = ">" {
         LDA (SP),Y
         CMP ACCU
         INC SP
         LDA (SP),Y
         SBC ACCU + 1
+  } else {!serious "caml_CMP: invalid arg"}
         BVC +
-        EOR # $80                       ;{Y = 0}
-+
-}
+        EOR # $80
++ !if @CMP = "<" | @CMP = ">" {
+	BMI caml_CMP_RES_T
+	BPL caml_CMP_RES_F
+  } else {
+	BPL caml_CMP_RES_T
+	BMI caml_CMP_RES_F
+  }
+}                                       ;{Y = 0}
 
-LTINT      
-!ifdef caml_gen_LTINT { +LTGEINT : BMI CMPRES_T : BPL CMPRES_F }
+caml_LTINT      
+!ifdef caml_gen_LTINT { +caml_CMP "<" }
 
-GEINT      
-!ifdef caml_gen_GEINT { +LTGEINT : BPL CMPRES_T : BMI CMPRES_F }
+caml_GEINT      
+!ifdef caml_gen_GEINT { +caml_CMP ">=" }
 
-LEINT      
-!ifdef caml_gen_LEINT { +LEGTINT : BPL CMPRES_T : BMI CMPRES_F }
+caml_LEINT      
+!ifdef caml_gen_LEINT { +caml_CMP "<=" }
 
-GTINT      
-!ifdef caml_gen_GTINT { +LEGTINT : BMI CMPRES_T : BPL CMPRES_F }
+caml_GTINT      
+!ifdef caml_gen_GTINT { +caml_CMP ">" }
 
-CMPRES
-        ;; EQ, NEQ, [LG][ET]INT - shared code
-!ifdef caml_gen_CMPRES {                ;{Y = 0}
-CMPRES_T
+caml_CMP_RES
+        ;; caml_EQ, caml_NEQ, [LG][ET]INT - shared code
+!ifdef caml_gen_CMP_RES {                ;{Y = 0}
+caml_CMP_RES_T
         LDA # Val_true
-        BNE +                                   ;JMP ++
-CMPRES_F
+        BNE +                                   ;JMP +
+caml_CMP_RES_F
         LDA # Val_false
 +       STA ACCU
         STY ACCU + 1
@@ -1689,7 +1680,7 @@ CMPRES_F
 +       +caml_NEXT                      ;{Y = 0}
 }
 
-OFSINT      
+caml_OFSINT      
 !ifdef caml_gen_OFSINT {
   !ifdef caml_INTERP {
                 JSR caml_interp_getarg
@@ -1708,7 +1699,7 @@ OFSINT
         +caml_NEXT                      ;{Y = 0}
 }
 
-OFSREF      
+caml_OFSREF      
 !ifdef caml_gen_OFSREF {
   !ifdef caml_INTERP {
         JSR caml_interp_getarg
@@ -1734,7 +1725,7 @@ OFSREF
         +caml_NEXT                      ;{Y = 0}
 }
 
-ISINT      
+caml_ISINT      
 !ifdef caml_gen_ISINT {                 ;{Y = 0}
         LDA ACCU
         AND # %00000001
@@ -1748,37 +1739,37 @@ ISINT
 ;; BEQ, BNEQ, BLTINT, BLEINT, BGTINT, BGEINT:
 ;; see "BYTECODE INTERPRETER SPECIFIC" section below.
 
-SGNCMP
+caml_CMP_SGN
         ;; Branches on signed-integer comparison - shared code
-!ifdef caml_gen_SGNCMP {                ;{A = <v, Y = >v}
+!ifdef caml_gen_CMP_SGN {                ;{A = <v, Y = >v}
         CMP ACCU                                ;Signed comparison, result is
         TYA                                     ;N=1:>= / N=0:<
-        LDY # 0                                 ;Used by [B]LTINT, [B]LEINT, ...
+        LDY # 0                                 ;Used by [B]caml_LTINT, [B]caml_LEINT, ...
         SBC ACCU + 1
         BVC +
         EOR # $80
 +       RTS                             ;{Y = 0}
 }
 
-!macro ULTGEINT @LTGE {                 ;{Y = 0}
+!macro caml_UCMP @CMP {                 ;{Y = 0}
         INY
-  !if @LTGE = "ULTINT" {
+  !if @CMP = "<" {
         LDA ACCU + 1
         CMP (SP),Y
-  } elif @LTGE = "UGEINT" {
+  } elif @CMP = ">=" {
         LDA (SP),Y
         CMP ACCU + 1
-  } else {!serious "ULTGEINT: invalid arg"}
+  } else {!serious "caml_UCMP: invalid arg"}
         BCC ++
         BNE +
         DEY
         LDA ACCU
         CMP (SP),Y
-  !if @LTGE = "<" {
+  !if @CMP = "<" {
         BCC ++
-  } elif @LTGE = ">=" {
+  } else {
         BCS ++
-  } else {!serious "ULTGEINT: invalid arg"}
+  }
 +       LDA # Val_false
         BNE +                                   ;JMP +
 ++      LDA # Val_true
@@ -1791,17 +1782,17 @@ SGNCMP
 +       LDY # 0
         +caml_NEXT                      ;{Y = 0}
 }
-        
-ULTINT      
-!ifdef caml_gen_ULTINT { +ULTGEINT "<" }
+     
+caml_ULTINT      
+!ifdef caml_gen_ULTINT { +caml_UCMP "<" }
 
-UGEINT      
-!ifdef caml_gen_UGEINT { +ULTGEINT ">=" }       
+caml_UGEINT      
+!ifdef caml_gen_UGEINT { +caml_UCMP ">=" }       
 
 ;; BULTINT, BUGEINT:
 ;; see "BYTECODE INTERPRETER SPECIFIC" section below.
 
-STOP = caml_end                                 ;See loader.asm
+caml_STOP = caml_end                                 ;See loader.asm
 
 ;; ----------------------------------------------------------------------------
 ;;       UNCAUGHT EXCEPTIONS
@@ -1854,7 +1845,7 @@ caml_uncaught_exn
         LDA (ACCU),Y
         STA @VAL                                ;  VAL := ACCU[1] (exn arg)
         JSR @pr_val                             ;  print argument(s)
-        JMP STOP                                ;  exit.
+        JMP caml_STOP                                ;  exit.
 @unbxd  LDY # 1                                 ;No: ACCU={obj_tag|"name"|oid}
         LDA (ACCU),Y
         STA @VAL + 1
@@ -1862,7 +1853,7 @@ caml_uncaught_exn
         LDA (ACCU),Y
         STA @VAL                                ;  VAL := ACCU[0] (exn name)
 	JSR @pr_exn                             ;  print exn name, petscii conv.
-        JMP STOP                                ;  exit.
+        JMP caml_STOP                                ;  exit.
 !convtab pet
 @err    !text 13, "Exception: ", 0
 
@@ -2013,43 +2004,43 @@ caml_uncaught_exn
 ;;       BYTECODE INTERPRETER SPECIFIC ROUTINES
 ;; ----------------------------------------------------------------------------
 
-PHENVACC
+caml_PHENVACC
 !ifdef caml_gen_PHENVACC {
-                JSR PUSH
-                JMP ENVACCN
+                JSR caml_PUSH
+                JMP caml_ENVACCN
 }
 
-ENVACCN
+caml_ENVACCN
 !ifdef caml_gen_ENVACCN {
                 JSR caml_interp_getarg
                 TAY
-                JMP ENVACC
+                JMP caml_ENVACC
 }
 
-PHENVACC14
+caml_PHENVACC14
 !ifdef caml_gen_PHENVACC14 {
                 SBC # $34 -1                    ;-1 as C=0; A:=2n=2*opc-$34
                 STA TMP
-                JSR PUSH
+                JSR caml_PUSH
                 LDY TMP
-                JMP ENVACC
+                JMP caml_ENVACC
 }
 
-ENVACC14
+caml_ENVACC14
 !ifdef caml_gen_ENVACC14 {
                 SBC # $2A -1                    ;-1 as C=0; A:=2n=2*opc-$2A
                 TAY
-                JMP ENVACC
+                JMP caml_ENVACC
 }
 
-APPLYN
+caml_APPLYN
 !ifdef caml_gen_APPLYN {
                 JSR caml_interp_getarg
                 TAY
-                JMP APPLY
+                JMP caml_APPLY
 }
 
-APPTRM13
+caml_APPTRM13
 !ifdef caml_gen_APPTRM13 {
                 SBC # $4A -1                    ;-1 as C=0; A:=2(n-1)=2*opc-$4A
                 BEQ +
@@ -2060,17 +2051,17 @@ APPTRM13
 +               JSR caml_interp_getarg
                 TAX                             ;X:=2(s-n)
                 INY                             ;Y:=2n-1
-                JMP APPTRM1
+                JMP caml_APPTRM1
 }
 
-PHOFSCLM2
+caml_PHOFSCLM2
 !ifdef caml_gen_PHOFSCLM2 {
-                JSR PUSH
+                JSR caml_PUSH
                 CLC
-                JMP OFSCLM2
+                JMP caml_OFSCLM2
 }
 
-OFSCLM2
+caml_OFSCLM2
 !ifdef caml_gen_OFSCLM2 {
                 LDA ENV
                 SBC # 4 -1                      ;-1 as C=0
@@ -2081,20 +2072,20 @@ OFSCLM2
                 +caml_NEXT
 }
 
-PHOFSCL0
+caml_PHOFSCL0
 !ifdef caml_gen_PHOFSCL0 {
-                JSR PUSH
-                JMP OFSCL0
+                JSR caml_PUSH
+                JMP caml_OFSCL0
 }
 
-PHOFSCL2
+caml_PHOFSCL2
 !ifdef caml_gen_PHOFSCL2 {
-                JSR PUSH
+                JSR caml_PUSH
                 CLC
-                JMP OFSCL2
+                JMP caml_OFSCL2
 }
 
-OFSCL2
+caml_OFSCL2
 !ifdef caml_gen_OFSCL2 {
                 LDA ENV
                 ADC # 4                         ;C=0
@@ -2105,23 +2096,23 @@ OFSCL2
                 +caml_NEXT
 }
 
-PHOFSCLN
+caml_PHOFSCLN
 !ifdef caml_gen_PHOFSCLN {
-                JSR PUSH
-                JMP OFSCLN
+                JSR caml_PUSH
+                JMP caml_OFSCLN
 }
 
-PHGETGLB
+caml_PHGETGLB
 !ifdef caml_gen_PHGETGLB {
-                JSR PUSH
-                JMP GETGLB
+                JSR caml_PUSH
+                JMP caml_GETGLB
 }
 
-GETGLB
+caml_GETGLB
 !ifdef caml_gen_GETGLB {
-                JSR GETGLBSUB
+                JSR caml_GETGLBSUB
                 +caml_NEXT
-GETGLBSUB                                       ;called by [PH]GETGLB[FLD]
+caml_GETGLBSUB                                       ;called by [PH]caml_GETGLB[FLD]
                 JSR caml_interp_getarg
                 STA ACCU
                 JSR caml_interp_getarg
@@ -2138,15 +2129,15 @@ GETGLBSUB                                       ;called by [PH]GETGLB[FLD]
 +               RTS
 }
 
-PHGETGLBFLD
+caml_PHGETGLBFLD
 !ifdef caml_gen_PHGETGLBFLD {
-                JSR PUSH
-                JMP GETGLBFLD
+                JSR caml_PUSH
+                JMP caml_GETGLBFLD
 }
 
-GETGLBFLD
+caml_GETGLBFLD
 !ifdef caml_gen_GETGLBFLD {
-                JSR GETGLBSUB
+                JSR caml_GETGLBSUB
                 JSR caml_interp_getarg
                 ASL
                 BCC +
@@ -2162,13 +2153,13 @@ GETGLBFLD
                 +caml_NEXT
 }
 
-PHATOM0
+caml_PHATOM0
 !ifdef caml_gen_PHATOM0 {
-                JSR PUSH
-                JMP ATOM0
+                JSR caml_PUSH
+                JMP caml_ATOM0
 }
 
-ATOM0
+caml_ATOM0
 !ifdef caml_gen_ATOM0 {
                 LDA # <caml_atom0
                 STA ACCU
@@ -2177,61 +2168,61 @@ ATOM0
                 +caml_NEXT
 }
 
-MKBLKN
+caml_MKBLKN
 !ifdef caml_gen_MKBLKN {
                 JSR caml_interp_getarg
                 TAX                             ;X = size
                 JSR caml_interp_getarg          ;A = tag
-                JMP MKBLK
+                JMP caml_MKBLK
 }
 
-MKBLK13
+caml_MKBLK13
 !ifdef caml_gen_MKBLK13 {
                 SBC # $7C -1                    ;-1 as C=0; A:=2n=2*opc-$7C
                 LSR
                 TAX                             ;X = size
                 JSR caml_interp_getarg          ;A = tag
-                JMP MKBLK
+                JMP caml_MKBLK
 }
 
-GETFLD13
+caml_GETFLD13
 !ifdef caml_gen_GETFLD13 {
                 SBC # $86 -1                    ;-1 as C=0; A:=2n=2*opc-$86
                 TAY
-                JMP GETFLD0
+                JMP caml_GETFLD0
 }
 
-SETFLD13
+caml_SETFLD13
 !ifdef caml_gen_SETFLD13 {
                 SBC # $93 -1                    ;-1 as C=0; A:=2n-1=2*opc-$93
                 ADC ACCU                        ;A:=2n-1+ACCU +1 as C=1
                 STA ACCU                        ;ACCU:=2n+ACCU
-                BCC SETFLD0
+                BCC caml_SETFLD0
                 INC ACCU + 1
-                JMP SETFLD0
+                JMP caml_SETFLD0
 }
 
-BIF
+caml_BIF
 !ifdef caml_gen_BIF {
                 LDA ACCU
                 LSR
                 ORA ACCU + 1
                 BEQ +
-                JMP BRANCH
+                JMP caml_BRANCH
 +               CLC:JMP caml_interp_skip2or3by
 }
 
-BIFNOT
+caml_BIFNOT
 !ifdef caml_gen_BIFNOT {
                 LDA ACCU
                 LSR
                 ORA ACCU + 1
                 BNE +
-                JMP BRANCH
+                JMP caml_BRANCH
 +               CLC:JMP caml_interp_skip2or3by
 }
 
-SWITCH
+caml_SWITCH
 !ifdef caml_gen_SWITCH {
                 LDA (PC),Y                      ;A := n
                 STA TMP
@@ -2241,7 +2232,7 @@ SWITCH
                 BEQ @pptrs
                 LDA PC
                 LDX PC + 1
-                JMP SWITCHI
+                JMP caml_SWITCHI
 @pptrs          LDX PC + 1
                 ASL TMP
                 BCC +
@@ -2251,20 +2242,20 @@ SWITCH
                 ADC TMP
                 BCC +
                 INX
-+               JMP SWITCHP
++               JMP caml_SWITCHP
 }
 
-PHCST03
+caml_PHCST03
 !ifdef caml_gen_PHCST03 {
                 SBC # $CF -1                    ;-1 as C=0; A:=2n+1=2*opc-$CF
                 TAX
-                JSR PUSH
+                JSR caml_PUSH
                 STX ACCU                        ;ACCU:=Val_int(opcode-$CF)
                 STY ACCU + 1
                 +caml_NEXT
 }
 
-CST03
+caml_CST03
 !ifdef caml_gen_CST03 {
                 SBC # $C5 -1                    ;-1 as C=0; A:=2n+1=2*opc-$C5
                 STA ACCU                        ;ACCU:=Val_int(opcode-$63)
@@ -2272,15 +2263,15 @@ CST03
                 +caml_NEXT
 }
 
-PHCSTN
+caml_PHCSTN
 !ifdef caml_gen_PHCSTN {
                 TAX
-                JSR PUSH
+                JSR caml_PUSH
                 TXA
-                JMP CSTN
+                JMP caml_CSTN
 }
 
-CSTN
+caml_CSTN
 !ifdef caml_gen_CSTN {
                 JSR caml_interp_getarg
                 STA ACCU
@@ -2296,133 +2287,133 @@ CSTN
         ;; N.b.: the routines placement guarantees that conditional
         ;; branches targets stay in range [-128, +127]
 
-!set PUSH_ULTINT = *
+!set caml_PUSH_ULTINT = *
 !ifdef caml_gen_PUSH_ULTINT {
   !ifdef caml_gen_PUSH {
     !ifdef caml_gen_ULTINT {
                 BCS +
-                JSR PUSH
+                JSR caml_PUSH
                 +caml_NEXT
-+               JMP ULTINT
-    } else {    JSR PUSH
++               JMP caml_ULTINT
+    } else {    JSR caml_PUSH
                 +caml_NEXT }
-  } else { !set PUSH_ULTINT = ULTINT }
+  } else { !set caml_PUSH_ULTINT = caml_ULTINT }
 }
 
-PHACC5_STOP
+caml_PHACC5_STOP
 !ifdef caml_gen_PHACC5_STOP {
-                BCC PHACC17
-                JMP STOP
+                BCC caml_PHACC17
+                JMP caml_STOP
 }
 
-PHACC17
+caml_PHACC17
 !ifdef caml_gen_PHACC17 {
                 SBC # $14 -1                    ;-1 as C=0; A:=2n=2*opc-$14
                 STA TMP
-                JSR PUSH
+                JSR caml_PUSH
                 LDY TMP                         ;Y:=2n
-                JMP ACCL
+                JMP caml_ACCL
 }
 
-!set ACC_BGEINT = *
+!set caml_ACC_BGEINT = *
 !ifdef caml_gen_ACC_BGEINT {
   !ifdef caml_gen_ACCH {
     !ifdef caml_gen_BGTGEINT {
-                BCS BGTGEINT
-                JMP ACCH
-    } else { !set ACC_BGEINT = ACCH }
-  } else { !set ACC_BGEINT = BGTGEINT }
+                BCS caml_BGTGEINT
+                JMP caml_ACCH
+    } else { !set caml_ACC_BGEINT = caml_ACCH }
+  } else { !set caml_ACC_BGEINT = caml_BGTGEINT }
 }
 
-!set ACC7_BGTINT = *
+!set caml_ACC7_BGTINT = *
 !ifdef caml_gen_ACC7_BGTINT {
   !ifdef caml_gen_ACC07 {
     !ifdef caml_gen_BGTGEINT {
-                BCC ACC07
-                ;; fallthrough BGTGEINT
-    } else { !set ACC7_BGTINT = ACC07 }
-  } else { !set ACC7_BGTINT = BGTGEINT }
+                BCC caml_ACC07
+                ;; fallthrough caml_BGTGEINT
+    } else { !set caml_ACC7_BGTINT = caml_ACC07 }
+  } else { !set caml_ACC7_BGTINT = caml_BGTGEINT }
 }
-BGTGEINT
+caml_BGTGEINT
 !ifdef caml_gen_BGTGEINT {
                 JSR caml_interp_getarg
                 TAX
                 JSR caml_interp_getarg
                 TAY
                 TXA
-                JSR SGNCMP
-                BPL BRANCH                      ;OK: BPL +119
+                JSR caml_CMP_SGN
+                BPL caml_BRANCH                      ;OK: BPL +119
                 CLC:JMP caml_interp_skip2or3by  ;no BCC, it'll be out-of-range
 }
 
-!set PHACC1_BULTINT = *
+!set caml_PHACC1_BULTINT = *
 !ifdef caml_gen_PHACC1_BULTINT {
   !ifdef caml_gen_PHACC17 {
     !ifdef caml_gen_BULTINT {
-                BCC PHACC17
-                ;; fallthrough BULTINT
-    } else { !set PHACC1_BULTINT = PHACC17 }
-  } else { !set PHACC1_BULTINT = BULTINT }
+                BCC caml_PHACC17
+                ;; fallthrough caml_BULTINT
+    } else { !set caml_PHACC1_BULTINT = caml_PHACC17 }
+  } else { !set caml_PHACC1_BULTINT = caml_BULTINT }
 }
-BULTINT
+caml_BULTINT
 !ifdef caml_gen_BULTINT {
                 JSR caml_interp_getarg
                 CMP ACCU
                 JSR caml_interp_getarg
                 SBC ACCU + 1
-                BCC BRANCH
+                BCC caml_BRANCH
                 CLC:BCC caml_interp_skip2or3by  ;OK: BCC +116
 }
 
-!set PHACC2_BUGEINT = *
+!set caml_PHACC2_BUGEINT = *
 !ifdef caml_gen_PHACC2_BUGEINT {
   !ifdef caml_gen_PHACC17 {
     !ifdef caml_gen_BUGEINT {
-                BCC PHACC17
-                ;; fallthrough BUGEINT 
-    } else { !set PHACC2_BUGEINT = PHACC17 }
-  } else { !set PHACC2_BUGEINT = BUGEINT }
+                BCC caml_PHACC17
+                ;; fallthrough caml_BUGEINT 
+    } else { !set caml_PHACC2_BUGEINT = caml_PHACC17 }
+  } else { !set caml_PHACC2_BUGEINT = caml_BUGEINT }
 }
-BUGEINT
+caml_BUGEINT
 !ifdef caml_gen_BUGEINT {
                 JSR caml_interp_getarg
                 CMP ACCU
                 JSR caml_interp_getarg
                 SBC ACCU + 1
-                BCS BRANCH
+                BCS caml_BRANCH
                 CLC:BCC caml_interp_skip2or3by
 }
 
-!set ACC0_OFSREF = *
+!set caml_ACC0_OFSREF = *
 !ifdef caml_gen_ACC0_OFSREF {
   !ifdef caml_gen_ACC07 {
     !ifdef caml_gen_OFSREF {
-                BCC ACC07
-                JMP OFSREF
-    } else { !set ACC0_OFSREF = ACC07 }
-  } else { !set ACC0_OFSREF = OFSREF }
+                BCC caml_ACC07
+                JMP caml_OFSREF
+    } else { !set caml_ACC0_OFSREF = caml_ACC07 }
+  } else { !set caml_ACC0_OFSREF = caml_OFSREF }
 }
 
-!set ACC1_ISINT = *
+!set caml_ACC1_ISINT = *
 !ifdef caml_gen_ACC1_ISINT {
   !ifdef caml_gen_ACC07 {
     !ifdef caml_gen_ISINT {
-                BCC ACC07
-                JMP ISINT
-    } else { !set ACC1_ISINT = ACC07 }
-  } else { !set ACC1_ISINT = ISINT }
+                BCC caml_ACC07
+                JMP caml_ISINT
+    } else { !set caml_ACC1_ISINT = caml_ACC07 }
+  } else { !set caml_ACC1_ISINT = caml_ISINT }
 }
 
-!set ACC3_BEQ = *
+!set caml_ACC3_BEQ = *
 !ifdef caml_gen_ACC3_BEQ {
   !ifdef caml_gen_ACC07 {
     !ifdef caml_gen_BEQ {
-                BCC ACC07
-                ;; fallthrough BEQ_
-    } else { !set ACC3_BEQ = ACC07 }
-  } else { !set ACC3_BEQ = BEQ_ }
+                BCC caml_ACC07
+                ;; fallthrough caml_BEQ
+    } else { !set caml_ACC3_BEQ = caml_ACC07 }
+  } else { !set caml_ACC3_BEQ = caml_BEQ }
 }
-BEQ_
+caml_BEQ
 !ifdef caml_gen_BEQ {
                 JSR caml_interp_getarg
                 CMP ACCU
@@ -2430,20 +2421,20 @@ BEQ_
                 SEC:BCS caml_interp_skip2or3by
 +               JSR caml_interp_getarg
                 CMP ACCU + 1
-                BEQ BRANCH
+                BEQ caml_BRANCH
                 CLC:BCC caml_interp_skip2or3by
 }
 
-!set ACC4_BNEQ = *
+!set caml_ACC4_BNEQ = *
 !ifdef caml_gen_ACC4_BNEQ {
   !ifdef caml_gen_ACC07 {
     !ifdef caml_gen_BNEQ {
-                BCC ACC07
-                ;; fallthrough BNEQ
-    } else { !set ACC4_BNEQ = ACC07 }
-  } else { !set ACC4_BNEQ = BNEQ }
+                BCC caml_ACC07
+                ;; fallthrough caml_BNEQ
+    } else { !set caml_ACC4_BNEQ = caml_ACC07 }
+  } else { !set caml_ACC4_BNEQ = caml_BNEQ }
 }
-BNEQ
+caml_BNEQ
 !ifdef caml_gen_BNEQ {
                 JSR caml_interp_getarg
                 CMP ACCU
@@ -2451,48 +2442,48 @@ BNEQ
                 SEC:BCS caml_interp_skip2or3by
 +               JSR caml_interp_getarg
                 CMP ACCU + 1
-                BNE BRANCH
+                BNE caml_BRANCH
                 CLC:BCC caml_interp_skip2or3by
 }
 
-!set ACC5_BLTINT = *
+!set caml_ACC5_BLTINT = *
 !ifdef caml_gen_ACC5_BLTINT {
   !ifdef caml_gen_ACC07 {
     !ifdef caml_gen_BLTLEINT {
-                BCS BLTLEINT
-                ;; fallthrough ACC07
-    } else { !set ACC5_BLTINT = ACC07 }
-  } else { !set ACC5_BLTINT = BLTLEINT }
+                BCS caml_BLTLEINT
+                ;; fallthrough caml_ACC07
+    } else { !set caml_ACC5_BLTINT = caml_ACC07 }
+  } else { !set caml_ACC5_BLTINT = caml_BLTLEINT }
 }
-ACC07
+caml_ACC07
 !ifdef caml_gen_ACC07 {
                 TAY                             ;Y=2n
-                JMP ACCL
+                JMP caml_ACCL
 }
 
-!set ACC6_BLEINT = *
+!set caml_ACC6_BLEINT = *
 !ifdef caml_gen_ACC6_BLEINT {
   !ifdef caml_gen_ACC07 {
     !ifdef caml_gen_BLTLEINT {
-                BCC ACC07
-                ;; fallthrough BLTLEINT
-    } else { !set ACC6_BLEINT = ACC07 }
-  } else { !set ACC6_BLEINT = BLTLEINT }
+                BCC caml_ACC07
+                ;; fallthrough caml_BLTLEINT
+    } else { !set caml_ACC6_BLEINT = caml_ACC07 }
+  } else { !set caml_ACC6_BLEINT = caml_BLTLEINT }
 }
-BLTLEINT
+caml_BLTLEINT
 !ifdef caml_gen_BLTLEINT {
                 JSR caml_interp_getarg
                 TAX
                 JSR caml_interp_getarg
                 TAY
                 TXA
-                JSR SGNCMP
-                BMI BRANCH
+                JSR caml_CMP_SGN
+                BMI caml_BRANCH
                 CLC:BCC caml_interp_skip2or3by
 }
-                ;; BRANCH, START, FETCH ARG, SKIP ARG.
+                ;; caml_BRANCH, START, FETCH ARG, SKIP ARG.
 
-BRANCH                                          ;Branch to *PC
+caml_BRANCH                                          ;Branch to *PC
                 LDA (PC),Y
                 TAX
                 INC PC
@@ -2520,45 +2511,58 @@ caml_interp_getarg                              ;Fetch a 1-byte argument
                 INC PC + 1
 +               RTS
 
+caml_INVALID					;invalid/unused opcode -> reset
+		JMP C64_RESET
+
                 ;; OPCODES JUMPTABLE.
                 ;; The table is page-aligned. The fetch-exec routine sets C=bit7
                 ;; of fetched opcode, then accesses the table using 2*opcode as
                 ;; an index.  
 
-                !align  $FF, $00
+		!align  $FF, $00
 caml_interp_jmptbl
                 ;; $00...$0f/$80...$8f  (unused opcodes: $0a, $82, $8d, $8e)
-                !wo ACC0_OFSREF, ACC1_ISINT, ACC07, ACC3_BEQ, ACC4_BNEQ
-                !wo ACC5_BLTINT, ACC6_BLEINT, ACC7_BGTINT, ACC_BGEINT
-                !wo PUSH_ULTINT, UGEINT, PHACC1_BULTINT, PHACC2_BUGEINT 
-                !wo PHACC17, PHACC17, PHACC5_STOP
+                !wo caml_ACC0_OFSREF, caml_ACC1_ISINT, caml_ACC07, caml_ACC3_BEQ
+		!wo caml_ACC4_BNEQ, caml_ACC5_BLTINT, caml_ACC6_BLEINT
+		!wo caml_ACC7_BGTINT, caml_ACC_BGEINT, caml_PUSH_ULTINT
+		!wo caml_UGEINT, caml_PHACC1_BULTINT, caml_PHACC2_BUGEINT
+                !wo caml_PHACC17, caml_PHACC17, caml_PHACC5_STOP
                 ;; $10...$1f/$90...$94  (unused opcodes: $90...$94)
-                !wo PHACC17, PHACC17, PHACC, POPN, ASSIGNH, ENVACC14, ENVACC14
-                !wo ENVACC14, ENVACC14, ENVACCN, PHENVACC14, PHENVACC14
-                !wo PHENVACC14, PHENVACC14, PHENVACC, PHRET
+                !wo caml_PHACC17, caml_PHACC17, caml_PHACC, caml_POPN
+		!wo caml_ASSIGNH, caml_ENVACC14, caml_ENVACC14, caml_ENVACC14
+		!wo caml_ENVACC14, caml_ENVACCN, caml_PHENVACC14
+		!wo caml_PHENVACC14, caml_PHENVACC14, caml_PHENVACC14
+		!wo caml_PHENVACC, caml_PHRET
                 ;; $20...$2f
-                !wo APPLYN, APPLY13, APPLY13, APPLY13, APPTRMN, APPTRM13
-                !wo APPTRM13, APPTRM13, RETURN, RESTART, GRAB, CLOSURE, CLOSREC
-                !wo OFSCLM2, OFSCL0, OFSCL2
+                !wo caml_APPLYN, caml_APPLY13, caml_APPLY13, caml_APPLY13
+		!wo caml_APPTRMN, caml_APPTRM13, caml_APPTRM13, caml_APPTRM13
+		!wo caml_RETURN, caml_RESTART, caml_GRAB, caml_CLOSURE
+		!wo caml_CLOSREC, caml_OFSCLM2, caml_OFSCL0, caml_OFSCL2
                 ;; $30...$3f            (unused opcodes: $3b, $3d)
-                !wo OFSCLN, PHOFSCLM2, PHOFSCL0, PHOFSCL2, PHOFSCLN, GETGLB
-                !wo PHGETGLB, GETGLBFLD, PHGETGLBFLD, SETGLB, ATOM0, $ffff
-                !wo PHATOM0, $ffff, MKBLKN, MKBLK13
+                !wo caml_OFSCLN, caml_PHOFSCLM2, caml_PHOFSCL0, caml_PHOFSCL2
+		!wo caml_PHOFSCLN, caml_GETGLB, caml_PHGETGLB, caml_GETGLBFLD
+		!wo caml_PHGETGLBFLD, caml_SETGLB, caml_ATOM0, caml_INVALID
+                !wo caml_PHATOM0, caml_INVALID, caml_MKBLKN, caml_MKBLK13
                 ;; $40...$4f
-                !wo MKBLK13, MKBLK13, MKFBLK, GETFLD0, GETFLD13, GETFLD13
-                !wo GETFLD13, GETFLDN, GETFFLDN, SETFLD0, SETFLD13, SETFLD13
-                !wo SETFLD13, SETFLDN, SETFFLDN, VECLEN
+                !wo caml_MKBLK13, caml_MKBLK13, caml_MKFBLK, caml_GETFLD0
+		!wo caml_GETFLD13, caml_GETFLD13, caml_GETFLD13, caml_GETFLDN
+		!wo caml_GETFFLDN, caml_SETFLD0, caml_SETFLD13, caml_SETFLD13
+                !wo caml_SETFLD13, caml_SETFLDN, caml_SETFFLDN, caml_VECLEN
                 ;; $50...$5f            (unused opcode: $5c)
-                !wo GETVEC, SETVEC, GETCHR, SETCHR, BRANCH, BIF, BIFNOT, SWITCH
-                !wo BOOLNOT, PHTRP, POPTRP, RAISE, $ffff, CCALL, CCALL, CCALL
+                !wo caml_GETVEC, caml_SETVEC, caml_GETCHR, caml_SETCHR
+		!wo caml_BRANCH, caml_BIF, caml_BIFNOT, caml_SWITCH
+		!wo caml_BOOLNOT, caml_PHTRP, caml_POPTRP, caml_RAISE
+		!wo caml_INVALID, caml_CCALL, caml_CCALL, caml_CCALL
                 ;; $60...$6f
-                !wo CCALL, CCALL, CCALL, CST03, CST03, CST03, CST03, CSTN
-                !wo PHCST03, PHCST03, PHCST03, PHCST03, PHCSTN, NEGINT, ADDINT
-                !wo SUBINT
+                !wo caml_CCALL, caml_CCALL, caml_CCALL, caml_CST03, caml_CST03
+		!wo caml_CST03, caml_CST03, caml_CSTN, caml_PHCST03
+		!wo caml_PHCST03, caml_PHCST03, caml_PHCST03, caml_PHCSTN
+		!wo caml_NEGINT, caml_ADDINT, caml_SUBINT
                 ;; $70...$7f
-                !wo MULINT, DIVINT, MODINT, ANDINT, ORINT, XORINT, LSLINT
-                !wo LSRINT, ASRINT, EQ, NEQ, LTINT, LEINT, GTINT, GEINT, OFSINT
-
+                !wo caml_MULINT, caml_DIVINT, caml_MODINT, caml_ANDINT
+		!wo caml_ORINT, caml_XORINT, caml_LSLINT, caml_LSRINT
+		!wo caml_ASRINT, caml_EQ, caml_NEQ, caml_LTINT, caml_LEINT
+		!wo caml_GTINT, caml_GEINT, caml_OFSINT
 } ;ifdef caml_INTERP
 
 caml_runtime_end

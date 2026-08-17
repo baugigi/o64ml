@@ -1,15 +1,3 @@
-(* ——————————————————————————————————————————————————————————————————————
-   Progetto BreadCaml / The BreadCaml Project
-   Copyright (C) 21-Apr-2026 Piero Furiesi
-   
-   Questo  programma  è software  libero;  può  essere ridistribuito  e/o
-   modificato nei termini della licenza GNU GPL ver. 2,  come specificato
-   nel file LICENZA-it nella cartella principale del progetto.
-   
-   This program is  free software; you can redistribute  it and/or modify
-   it under the terms of the GNU  General Public License (GPL) ver. 2, as
-   specified in the LICENSE-en file in the project root folder.
-   —————————————————————————————————————————————————————————————————————— *)
 (* PPX rewriter for BreadCaml *)
 
 open Ast_mapper
@@ -68,7 +56,7 @@ let () =
      exit 0
   | _ ->
      Printf.eprintf
-       "Illegal option or argument in command line:\n«%s»\n\n%!"
+       "Illegal option or argument in command line:\n'%s'\n\n%!"
        (String.concat " " (Array.to_list Sys.argv));
      usage ();
      exit 1
